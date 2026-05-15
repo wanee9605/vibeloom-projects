@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gravity Flip</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #07070e;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+      overflow: hidden; user-select: none;
+    }
+    h1 {
+      color: #a855f7; font-size: 2rem; letter-spacing: 0.3em;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px #a855f7, 0 0 40px #a855f7;
+      margin-bottom: 12px;
+    }
+    #hud { display: flex; gap: 48px; margin-bottom: 14px; }
+    .hud-item { text-align: center; }
+    .hud-label { color: #555; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; }
+    .hud-val { color: #fff; font-size: 1.5rem; font-weight: bold; text-shadow: 0 0 10px #a855f7; }
+    #wrap { position: relative; }
+    canvas { border: 1px solid #a855f744; box-shadow: 0 0 30px #a855f722; border-radius: 4px; display: block; }
+    #overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      background: #07070ecc;
+    }
+    .ov-title { font-size: 2.4rem; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; color: #a855f7; text-shadow: 0 0 20px #a855f7; }
+    .ov-sub { color: #888; font-size: 0.85rem; letter-spacing: 0.12em; }
+    #play-btn {
+      padding: 12px 36px; background: transparent;
+      border: 1px solid #a855f7; color: #a855f7;
+      font-family: 'Courier New', monospace; font-size: 1rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; box-shadow: 0 0 10px #a855f744;
+    }
+    #play-btn:hover { background: #a855f722; box-shadow: 0 0 20px #a855f788; }
+    #hint { margin-top: 14px; color: #444; font-size: 0.7rem; letter-spacing: 0.1em; }
+  </style>
+</head>
+<body>
+  <h1>Gravity Flip</h1>
+  <div id="hud">
+    <div class="hud-item"><div class="hud-label">Score</div><div class="hud-val" id="score">0</div></div>
+    <div class="hud-item"><div class="hud-label">Best</div><div class="hud-val" id="best">0</div></div>
+  </div>
+  <div id="wrap">
+    <canvas id="canvas" width="480" height="320"></canvas>
+    <div id="overlay">
+      <div class="ov-title" id="ov-title">Ready</div>
+      <div class="ov-sub" id="ov-sub">Flip gravity to survive</div>
+      <button id="play-btn">Start Game</button>
+    </div>
+  </div>
+  <div id="hint">Space / Tap to flip gravity</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const ovTitle = document.getElementById('ov-title');
+    const ovSub = document.getElementById('ov-sub');
+    const playBtn = document.getElementById('play-btn');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+
+    const W = canvas.width, H = canvas.height;
+    const WALL = 34;              // wall thickness
+    const TOP = WALL, BOT = H - WALL;   // play area: 34 to 286 = 252px
+    const PW = 22, PH = 22;
+    const OW = 26;
+    const GRAVITY = 0.18;         // gentle gravity
+    const MAX_VY = 8;
+    const OBS_GAP_MIN = 120;      // minimum gap between top/bottom pillars
+    const OBS_MAX_H = 66;         // max pillar height (limits how narrow the gap can get)
+    const OBS_MIN_H = 24;
+
+    let best = parseInt(localStorage.getItem('gf2-best') || '0');
+    bestEl.textContent = best;
+
+    let player, obstacles, particles, score, speed, frame, phase, rafId;
+
+    function init() {
+      player = { x: 90, y: H/2 - PH/2, vy: 0, flipped: false };
+      obstacles = [];
+      particles = [];
+      score = 0;
+      speed = 2.0;
+      frame = 0;
+      phase = 'idle';
+      scoreEl.textContent = 0;
+    }
+
+    // On first input: start game (gravity activates)
+    // On subsequent inputs: flip gravity direction only (no velocity impulse)
+    function doFlip() {
+      if (phase === 'idle') {
+        phase = 'playing';
+        player.vy = 0;
+        return;
+      }
+      if (phase !== 'playing') return;
+      player.flipped = !player.flipped;
+      // No impulse — just flip gravity. Momentum-based feels much better.
+      addParticles();
+    }
+
+    function addParticles() {
+      for (let i = 0; i < 8; i++) {
+        particles.push({
+          x: player.x + PW/2, y: player.y + PH/2,
+          vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5,
+          life: 1, color: player.flipped ? '#38bdf8' : '#a855f7'
+        });
+      }
+    }
+
+    function spawnObs() {
+      const usable = BOT - TOP;  // 252
+      // Pick random heights that guarantee at least OBS_GAP_MIN gap
+      let topH, botH, gap;
+      let tries = 0;
+      do {
+        topH = Math.random() * (OBS_MAX_H - OBS_MIN_H) + OBS_MIN_H;
+        botH = Math.random() * (OBS_MAX_H - OBS_MIN_H) + OBS_MIN_H;
+        gap = usable - topH - botH;
+        tries++;
+      } while (gap < OBS_GAP_MIN && tries < 20);
+      if (gap < OBS_GAP_MIN) return; // skip if we can't make a valid obstacle
+      obstacles.push({ x: W + 10, topH, botH, passed: false });
+    }
+
+    function checkHit() {
+      // Slightly inset hitbox for forgiveness
+      const px = player.x + 4, py = player.y + 4, pw = PW-8, ph = PH-8;
+      // Wall collision
+      if (player.y < TOP || player.y + PH > BOT) return true;
+      // Obstacle collision
+      for (const o of obstacles) {
+        if (px + pw <= o.x || px >= o.x + OW) continue;
+        if (py < TOP + o.topH) return true;
+        if (py + ph > BOT - o.botH) return true;
+      }
+      return false;
+    }
+
+    function update() {
+      if (phase !== 'playing') return;
+
+      frame++;
+      // Speed: starts gentle, increases slowly, caps at 5
+      speed = Math.min(5.0, 2.0 + frame * 0.0005);
+
+      // Physics: gravity pulls toward ceiling or floor depending on flipped
+      const g = player.flipped ? -GRAVITY : GRAVITY;
+      player.vy += g;
+      player.vy = Math.max(-MAX_VY, Math.min(MAX_VY, player.vy));
+      player.y += player.vy;
+
+      // Spawn obstacles: first one after 90 frames, then every ~80 frames
+      if (frame > 90) {
+        const interval = Math.max(60, 95 - Math.floor(frame / 400) * 5);
+        if ((frame - 90) % interval === 0) spawnObs();
+      }
+
+      // Move obstacles & score
+      obstacles.forEach(o => {
+        o.x -= speed;
+        if (!o.passed && o.x + OW < player.x) {
+          o.passed = true; score++;
+          scoreEl.textContent = score;
+          if (score > best) { best = score; bestEl.textContent = best; localStorage.setItem('gf2-best', best); }
+        }
+      });
+      obstacles = obstacles.filter(o => o.x + OW > -10);
+
+      if (checkHit()) die();
+    }
+
+    function die() {
+      phase = 'dead';
+      ovTitle.textContent = 'Game Over';
+      ovTitle.style.color = '#f43f5e';
+      ovTitle.style.textShadow = '0 0 20px #f43f5e';
+      ovSub.textContent = 'Score: ' + score;
+      playBtn.textContent = 'Try Again';
+      overlay.style.display = 'flex';
+    }
+
+    function draw() {
+      ctx.fillStyle = '#07070e';
+      ctx.fillRect(0, 0, W, H);
+
+      // Scrolling grid
+      ctx.strokeStyle = '#ffffff05'; ctx.lineWidth = 1;
+      const gx = (frame * speed) % 60;
+      for (let x = -gx; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+      // Walls
+      ctx.save(); ctx.shadowBlur = 14; ctx.shadowColor = '#a855f7'; ctx.fillStyle = '#a855f7';
+      ctx.fillRect(0, 0, W, WALL);
+      ctx.fillRect(0, H-WALL, W, WALL);
+      ctx.restore();
+
+      // Obstacles
+      obstacles.forEach(o => {
+        ctx.save(); ctx.shadowBlur = 14; ctx.shadowColor = '#818cf8'; ctx.fillStyle = '#818cf8';
+        ctx.fillRect(o.x, TOP, OW, o.topH);
+        ctx.fillRect(o.x, BOT - o.botH, OW, o.botH);
+        ctx.restore();
+      });
+
+      // Particles
+      for (let i = particles.length-1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= 0.07;
+        if (p.life <= 0) { particles.splice(i,1); continue; }
+        ctx.save(); ctx.globalAlpha = p.life; ctx.shadowBlur = 6;
+        ctx.shadowColor = p.color; ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3*p.life, 0, Math.PI*2); ctx.fill(); ctx.restore();
+      }
+
+      // Player — bobs in idle phase
+      let py = player.y;
+      if (phase === 'idle') py = H/2 - PH/2 + Math.sin(Date.now()/500) * 10;
+
+      ctx.save();
+      ctx.translate(player.x + PW/2, py + PH/2);
+      if (player.flipped) ctx.scale(1, -1);
+      ctx.shadowBlur = 22; ctx.shadowColor = '#a855f7'; ctx.fillStyle = '#a855f7';
+      ctx.fillRect(-PW/2, -PH/2, PW, PH);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.moveTo(0,-6); ctx.lineTo(7,4); ctx.lineTo(-7,4); ctx.closePath(); ctx.fill();
+      ctx.restore();
+
+      // Idle hint
+      if (phase === 'idle') {
+        ctx.save();
+        ctx.globalAlpha = 0.6 + 0.4 * Math.sin(Date.now()/600);
+        ctx.fillStyle = '#a855f7';
+        ctx.font = '12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('SPACE / TAP TO START', W/2, H/2 + 55);
+        ctx.restore();
+      }
+    }
+
+    function loop() {
+      update();
+      draw();
+      if (phase !== 'dead') rafId = requestAnimationFrame(loop);
+    }
+
+    function startGame() {
+      cancelAnimationFrame(rafId);
+      init();
+      overlay.style.display = 'none';
+      rafId = requestAnimationFrame(loop);
+    }
+
+    playBtn.addEventListener('click', startGame);
+    document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); doFlip(); } });
+    canvas.addEventListener('click', doFlip);
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); doFlip(); }, { passive: false });
+  </script>
+</body>
+</html>

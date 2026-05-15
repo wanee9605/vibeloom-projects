@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"C:\\\\Users\\\\kimti\\\\OneDrive\\\\바탕 화면\\\\for use upload\\\\neon-snake\\\\index.html\")",
+      "Bash(start \"\" \"C:\\\\Users\\\\kimti\\\\OneDrive\\\\바탕 화면\\\\for use upload\\\\gravity-flip\\\\index.html\")",
+      "Bash(start \"\" \"C:\\\\Users\\\\kimti\\\\OneDrive\\\\바탕 화면\\\\for use upload\\\\palette-thief\\\\index.html\")",
+      "Bash(start \"\" \"C:\\\\Users\\\\kimti\\\\OneDrive\\\\바탕 화면\\\\for use upload\\\\readme-generator\\\\index.html\")",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

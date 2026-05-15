@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>README 생성기</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0d14; min-height: 100vh; font-family: 'Inter', 'Segoe UI', sans-serif; color: #e2e8f0; }
+    header { text-align: center; padding: 40px 20px 20px; }
+    h1 {
+      font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #22d3ee, #6366f1);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .subtitle { margin-top: 8px; color: #555; font-size: 0.95rem; }
+    .container {
+      max-width: 1100px; margin: 32px auto; padding: 0 20px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+    .panel { background: #13131f; border: 1px solid #1e1e2e; border-radius: 14px; overflow: hidden; }
+    .panel-header {
+      padding: 14px 20px; border-bottom: 1px solid #1e1e2e;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .panel-title { font-size: 0.8rem; font-weight: 600; color: #6366f1; text-transform: uppercase; letter-spacing: 0.1em; }
+    .panel-body { padding: 20px; }
+    .field { margin-bottom: 18px; }
+    label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .tip {
+      position: relative; display: inline-flex; align-items: center; justify-content: center;
+      width: 15px; height: 15px; border-radius: 50%;
+      background: #252535; color: #666; font-size: 0.65rem;
+      font-weight: 700; cursor: default; letter-spacing: 0; text-transform: none; flex-shrink: 0;
+    }
+    .tip::after {
+      content: attr(data-tip);
+      position: absolute; left: calc(100% + 10px); top: 50%;
+      transform: translateY(-50%);
+      background: #1e1e2e; color: #c4c4d4;
+      font-size: 0.72rem; font-weight: 400; line-height: 1.55;
+      white-space: normal; width: 180px;
+      padding: 8px 12px; border-radius: 8px;
+      border: 1px solid #333; pointer-events: none;
+      opacity: 0; transition: opacity 0.15s;
+      z-index: 10; letter-spacing: 0; text-transform: none;
+    }
+    .tip:hover::after { opacity: 1; }
+    .tip:hover { background: #6366f133; color: #a5b4fc; }
+    input, textarea, select {
+      width: 100%; background: #0d0d14; border: 1px solid #252535;
+      border-radius: 8px; color: #e2e8f0; font-family: inherit;
+      font-size: 0.9rem; padding: 10px 12px; outline: none; transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f122; }
+    textarea { resize: vertical; min-height: 80px; }
+    .tag-input-wrap {
+      display: flex; flex-wrap: wrap; gap: 6px; background: #0d0d14;
+      border: 1px solid #252535; border-radius: 8px; padding: 8px;
+      cursor: text; min-height: 44px; align-items: center;
+    }
+    .tag-input-wrap:focus-within { border-color: #6366f1; box-shadow: 0 0 0 3px #6366f122; }
+    .tag {
+      background: #6366f122; border: 1px solid #6366f155; color: #a5b4fc;
+      border-radius: 5px; padding: 3px 10px; font-size: 0.8rem;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tag-remove { cursor: pointer; color: #6366f188; font-size: 0.9rem; line-height: 1; }
+    .tag-remove:hover { color: #f87171; }
+    .tag-input {
+      border: none; background: transparent; color: #e2e8f0;
+      font-size: 0.875rem; outline: none; padding: 2px 4px;
+      min-width: 80px; flex: 1; box-shadow: none;
+    }
+    .list-items { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .list-item {
+      display: flex; align-items: center; gap: 8px; background: #0d0d14;
+      border: 1px solid #1e1e2e; border-radius: 6px; padding: 7px 10px;
+      font-size: 0.875rem; color: #aaa;
+    }
+    .list-item-remove { margin-left: auto; cursor: pointer; color: #444; font-size: 1rem; }
+    .list-item-remove:hover { color: #f87171; }
+    .add-btn {
+      background: transparent; border: 1px dashed #333; border-radius: 7px;
+      color: #555; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+      padding: 8px 14px; margin: 0;
+    }
+    .add-btn:hover { border-color: #6366f1; color: #6366f1; }
+    .generate-btn {
+      width: 100%; margin-top: 6px; padding: 13px;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      border: none; border-radius: 10px; color: #fff;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      letter-spacing: 0.04em; transition: opacity 0.2s, transform 0.1s;
+    }
+    .generate-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .generate-btn:active { transform: translateY(0); }
+    #output {
+      font-family: 'Courier New', monospace; font-size: 0.78rem; line-height: 1.7;
+      color: #94a3b8; white-space: pre-wrap; word-break: break-word;
+      padding: 20px; min-height: 300px; max-height: 600px; overflow-y: auto;
+    }
+    #output::-webkit-scrollbar { width: 6px; }
+    #output::-webkit-scrollbar-track { background: #0d0d14; }
+    #output::-webkit-scrollbar-thumb { background: #252535; border-radius: 3px; }
+    .output-actions { display: flex; gap: 8px; }
+    .action-btn {
+      padding: 6px 14px; background: #1a1a2e; border: 1px solid #252540;
+      border-radius: 7px; color: #888; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;
+    }
+    .action-btn:hover { border-color: #6366f1; color: #a5b4fc; }
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; height: 280px; gap: 10px; color: #333;
+    }
+    .empty-state .icon { font-size: 2.5rem; filter: grayscale(1); opacity: 0.4; }
+    .empty-state p { font-size: 0.85rem; }
+    .copy-toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #fff; color: #000; padding: 10px 20px;
+      border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      opacity: 0; transition: all 0.25s; pointer-events: none; z-index: 100;
+    }
+    .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    select option { background: #13131f; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>README 생성기</h1>
+    <p class="subtitle">프로젝트 정보를 입력하면 README.md를 즉시 만들어드립니다</p>
+  </header>
+
+  <div class="container">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">프로젝트 정보</span></div>
+      <div class="panel-body">
+
+        <div class="field">
+          <label>프로젝트 이름 * <span class="tip" data-tip="내 프로젝트를 부르는 이름이에요. 영어 소문자와 하이픈(-) 사용을 추천해요">?</span></label>
+          <input id="name" type="text" placeholder="예: my-awesome-app" />
+        </div>
+
+        <div class="field">
+          <label>한 줄 설명 * <span class="tip" data-tip="처음 보는 사람이 읽었을 때 바로 이해할 수 있게 써주세요">?</span></label>
+          <input id="desc" type="text" placeholder="이 프로젝트가 무엇을 하는지 간단히" />
+        </div>
+
+        <div class="field">
+          <label>기술 스택 <span class="tip" data-tip="만드는 데 쓴 기술이에요. 예: HTML, React, Python. 입력 후 Enter로 추가">?</span></label>
+          <div class="tag-input-wrap" id="stack-wrap">
+            <input class="tag-input" id="stack-input" placeholder="예: React 입력 후 Enter" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>주요 기능 <span class="tip" data-tip="이 프로젝트로 뭘 할 수 있는지 나열해 주세요. 예: 이미지 업로드, 색상 추출">?</span></label>
+          <div class="list-items" id="features-list"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <input id="feature-input" type="text" placeholder="기능 추가..." />
+            <button class="add-btn" onclick="addFeature()">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>설치 방법 <span class="tip" data-tip="다른 사람이 내 프로젝트를 내려받고 실행하는 방법을 순서대로 적어요">?</span></label>
+          <div class="list-items" id="install-list"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <input id="install-input" type="text" placeholder="설치 단계 추가..." />
+            <button class="add-btn" onclick="addInstall()">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>사용 예시 <span class="tip" data-tip="실제로 어떻게 쓰는지 보여주세요. 예: npm start 또는 python app.py">?</span></label>
+          <textarea id="usage" placeholder="어떻게 실행하거나 사용하나요?"></textarea>
+        </div>
+
+        <div class="field">
+          <label>라이선스 <span class="tip" data-tip="잘 모르겠으면 MIT! 누구나 자유롭게 쓸 수 있는 가장 널리 쓰이는 방식이에요">?</span></label>
+          <select id="license">
+            <option value="MIT">MIT</option>
+            <option value="Apache-2.0">Apache 2.0</option>
+            <option value="GPL-3.0">GPL-3.0</option>
+            <option value="BSD-2-Clause">BSD-2-Clause</option>
+            <option value="ISC">ISC</option>
+            <option value="Unlicense">Unlicense</option>
+            <option value="None">없음</option>
+          </select>
+        </div>
+
+        <button class="generate-btn" onclick="generate()">README 생성하기</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">미리보기</span>
+        <div class="output-actions">
+          <button class="action-btn" onclick="copyMd()">마크다운 복사</button>
+          <button class="action-btn" onclick="downloadMd()">파일 다운로드</button>
+        </div>
+      </div>
+      <div id="output-wrap">
+        <div class="empty-state" id="empty-state">
+          <span class="icon">📄</span>
+          <p>생성된 README가 여기에 표시됩니다</p>
+        </div>
+        <pre id="output" style="display:none;"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="copy-toast" id="toast"></div>
+
+  <script>
+    const stack = [], features = [], installSteps = [];
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    const stackInput = document.getElementById('stack-input');
+    const stackWrap = document.getElementById('stack-wrap');
+    stackWrap.addEventListener('click', () => stackInput.focus());
+    stackInput.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ',') && stackInput.value.trim()) {
+        e.preventDefault();
+        addTag(stackInput.value.trim().replace(/,$/, ''));
+        stackInput.value = '';
+      }
+      if (e.key === 'Backspace' && !stackInput.value && stack.length) removeTag(stack.length - 1);
+    });
+
+    function addTag(text) {
+      if (!text || stack.includes(text)) return;
+      stack.push(text); renderTags();
+    }
+    function removeTag(i) { stack.splice(i, 1); renderTags(); }
+    function renderTags() {
+      stackWrap.querySelectorAll('.tag').forEach(el => el.remove());
+      stack.forEach((t, i) => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.innerHTML = `${t}<span class="tag-remove" onclick="removeTag(${i})">×</span>`;
+        stackWrap.insertBefore(tag, stackInput);
+      });
+    }
+
+    function addFeature() {
+      const val = document.getElementById('feature-input').value.trim();
+      if (!val) return;
+      features.push(val); document.getElementById('feature-input').value = '';
+      renderList('features-list', features, 'feature');
+    }
+    function addInstall() {
+      const val = document.getElementById('install-input').value.trim();
+      if (!val) return;
+      installSteps.push(val); document.getElementById('install-input').value = '';
+      renderList('install-list', installSteps, 'install');
+    }
+    function removeListItem(arr, i, type) {
+      arr.splice(i, 1);
+      renderList(type === 'feature' ? 'features-list' : 'install-list', arr, type);
+    }
+    function renderList(elId, arr, type) {
+      const el = document.getElementById(elId);
+      el.innerHTML = '';
+      arr.forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'list-item';
+        row.innerHTML = `<span>${i+1}.</span><span style="flex:1">${item}</span><span class="list-item-remove" onclick="removeListItem(${type==='feature'?'features':'installSteps'},${i},'${type}')">×</span>`;
+        el.appendChild(row);
+      });
+    }
+
+    document.getElementById('feature-input').addEventListener('keydown', e => { if (e.key === 'Enter') addFeature(); });
+    document.getElementById('install-input').addEventListener('keydown', e => { if (e.key === 'Enter') addInstall(); });
+
+    function generate() {
+      const name = document.getElementById('name').value.trim();
+      const desc = document.getElementById('desc').value.trim();
+      const usage = document.getElementById('usage').value.trim();
+      const license = document.getElementById('license').value;
+
+      if (!name) { showToast('프로젝트 이름을 입력해주세요'); return; }
+
+      let md = `# ${name}\n\n`;
+      if (desc) md += `${desc}\n\n`;
+
+      if (stack.length) {
+        md += stack.map(t => `![${t}](https://img.shields.io/badge/${encodeURIComponent(t)}-informational?style=flat)`).join(' ') + '\n\n';
+      }
+
+      md += `---\n\n`;
+
+      if (features.length) {
+        md += `## ✨ 주요 기능\n\n`;
+        features.forEach(f => { md += `- ${f}\n`; });
+        md += '\n';
+      }
+      if (stack.length) {
+        md += `## 🛠 기술 스택\n\n`;
+        stack.forEach(t => { md += `- ${t}\n`; });
+        md += '\n';
+      }
+      if (installSteps.length) {
+        md += `## 🚀 시작하기\n\n`;
+        installSteps.forEach((s, i) => { md += `${i+1}. ${s}\n`; });
+        md += '\n';
+      }
+      if (usage) md += `## 💡 사용법\n\n\`\`\`\n${usage}\n\`\`\`\n\n`;
+      if (license !== 'None') md += `## 📄 라이선스\n\n이 프로젝트는 [${license} 라이선스](LICENSE)를 따릅니다.\n\n`;
+
+      md += `---\n\n[vibeloom.io](https://vibeloom.io)에서 만들었습니다\n`;
+
+      document.getElementById('empty-state').style.display = 'none';
+      const output = document.getElementById('output');
+      output.style.display = 'block';
+      output.textContent = md;
+    }
+
+    function copyMd() {
+      const text = document.getElementById('output').textContent;
+      if (!text) { showToast('먼저 README를 생성해주세요'); return; }
+      navigator.clipboard.writeText(text).then(() => showToast('클립보드에 복사됐습니다!'));
+    }
+
+    function downloadMd() {
+      const text = document.getElementById('output').textContent;
+      if (!text) { showToast('먼저 README를 생성해주세요'); return; }
+      const name = document.getElementById('name').value.trim() || 'README';
+      const blob = new Blob([text], { type: 'text/markdown' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `${name}-README.md`; a.click();
+    }
+  </script>
+</body>
+</html>

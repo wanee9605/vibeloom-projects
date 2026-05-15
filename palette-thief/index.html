@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palette Thief</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0f0f13; min-height: 100vh;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      color: #fff; display: flex; flex-direction: column;
+      align-items: center; padding: 40px 20px;
+    }
+    header { text-align: center; margin-bottom: 40px; }
+    h1 {
+      font-size: 2.2rem; font-weight: 800;
+      background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .subtitle { margin-top: 8px; color: #666; font-size: 0.95rem; }
+
+    #drop-zone {
+      width: 100%; max-width: 600px; border: 2px dashed #333;
+      border-radius: 16px; padding: 60px 20px; text-align: center;
+      cursor: pointer; transition: all 0.25s; position: relative; background: #161620;
+    }
+    #drop-zone.over { border-color: #f59e0b; background: #f59e0b0d; box-shadow: 0 0 30px #f59e0b22; }
+    #drop-zone .icon { font-size: 3rem; margin-bottom: 16px; }
+    #drop-zone h2 { font-size: 1.1rem; font-weight: 600; color: #ccc; margin-bottom: 6px; }
+    #drop-zone p { font-size: 0.85rem; color: #555; }
+    #drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .browse {
+      display: inline-block; margin-top: 14px; padding: 8px 22px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      border-radius: 8px; color: #fff; font-size: 0.875rem; font-weight: 600; pointer-events: none;
+    }
+
+    #result { width: 100%; max-width: 600px; margin-top: 28px; display: none; }
+    #img-wrap { border-radius: 12px; overflow: hidden; background: #161620; border: 1px solid #222; }
+
+    /* display canvas area */
+    #canvas-wrap {
+      position: relative; background: #0a0a0e;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 120px;
+    }
+    #display-canvas { display: block; max-width: 100%; max-height: 280px; }
+    #pick-overlay {
+      position: absolute; inset: 0;
+      cursor: crosshair; display: none;
+    }
+    #canvas-wrap.pick-mode #pick-overlay { display: block; }
+
+    /* eyedropper banner */
+    #pick-banner {
+      display: none; align-items: center; justify-content: center; gap: 8px;
+      padding: 8px 16px; background: #f59e0b18; border-bottom: 1px solid #f59e0b44;
+      font-size: 0.78rem; color: #f59e0b; font-weight: 600;
+    }
+    #pick-banner.active { display: flex; }
+
+    #palette-area { padding: 16px 20px 20px; }
+    .pal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+    .pal-label { font-size: 0.8rem; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.1em; }
+
+    .header-btns { display: flex; gap: 6px; }
+    .hbtn {
+      padding: 5px 12px; background: #1e1e2a; border: 1px solid #333;
+      border-radius: 6px; color: #aaa; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .hbtn:hover { border-color: #f59e0b; color: #f59e0b; }
+    .hbtn.active { background: #f59e0b22; border-color: #f59e0b; color: #f59e0b; }
+
+    #swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 10px; }
+
+    .sw { border-radius: 10px; overflow: hidden; border: 1px solid #222; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; }
+    .sw:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #0008; }
+    .sw-color { height: 60px; }
+    .sw-info { background: #1a1a24; padding: 6px 8px; }
+    .sw-hex { font-size: 0.7rem; font-weight: 600; color: #ddd; font-family: monospace; }
+    .sw-rgb { font-size: 0.6rem; color: #555; font-family: monospace; margin-top: 1px; }
+    .sw-del {
+      position: absolute; top: 4px; right: 4px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: #0008; color: #fff; font-size: 0.7rem;
+      display: none; align-items: center; justify-content: center;
+      cursor: pointer; line-height: 1;
+    }
+    .sw:hover .sw-del { display: flex; }
+
+    /* floating color bubble (follows cursor) */
+    #bubble {
+      position: fixed; pointer-events: none; z-index: 9999;
+      display: none; flex-direction: column; align-items: center; gap: 5px;
+      transform: translate(18px, -50%);
+    }
+    #bubble-circle {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 3px solid #fff; box-shadow: 0 2px 12px #0008;
+    }
+    #bubble-hex {
+      background: #000c; color: #fff;
+      font-size: 0.68rem; font-family: monospace; font-weight: 600;
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #fff; color: #000; padding: 10px 20px;
+      border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      opacity: 0; transition: all 0.22s; pointer-events: none; z-index: 100;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    canvas#c { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Palette Thief</h1>
+    <p class="subtitle">Drop any image to steal its color palette</p>
+  </header>
+
+  <div id="drop-zone">
+    <input type="file" id="file-in" accept="image/*" />
+    <div class="icon">🎨</div>
+    <h2>Drop an image here</h2>
+    <p>PNG, JPG, WebP, GIF — any image works</p>
+    <span class="browse">Browse files</span>
+  </div>
+
+  <div id="result">
+    <div id="img-wrap">
+      <div id="pick-banner">💧 이미지를 클릭해서 원하는 색상을 골라보세요 — 클릭하면 팔레트에 추가돼요</div>
+      <div id="canvas-wrap">
+        <canvas id="display-canvas"></canvas>
+        <div id="pick-overlay"></div>
+      </div>
+      <div id="palette-area">
+        <div class="pal-header">
+          <span class="pal-label">Extracted Palette</span>
+          <div class="header-btns">
+            <button class="hbtn" id="eyedropper-btn">💧 스포이드</button>
+            <button class="hbtn" id="reset-btn">↺ 자동 추출</button>
+            <button class="hbtn" id="copy-all">Copy All HEX</button>
+          </div>
+        </div>
+        <div id="swatches"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- floating color preview -->
+  <div id="bubble">
+    <div id="bubble-circle"></div>
+    <span id="bubble-hex">#000000</span>
+  </div>
+
+  <canvas id="c"></canvas>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const dz        = document.getElementById('drop-zone');
+    const fi        = document.getElementById('file-in');
+    const result    = document.getElementById('result');
+    const canvasWrap= document.getElementById('canvas-wrap');
+    const dispCanvas= document.getElementById('display-canvas');
+    const dispCtx   = dispCanvas.getContext('2d', { willReadFrequently: true });
+    const pickOverlay = document.getElementById('pick-overlay');
+    const pickBanner  = document.getElementById('pick-banner');
+    const swatchesEl  = document.getElementById('swatches');
+    const extCanvas = document.getElementById('c');
+    const extCtx    = extCanvas.getContext('2d', { willReadFrequently: true });
+    const toastEl   = document.getElementById('toast');
+    const copyAllBtn= document.getElementById('copy-all');
+    const eyedropperBtn = document.getElementById('eyedropper-btn');
+    const resetBtn  = document.getElementById('reset-btn');
+    const bubble    = document.getElementById('bubble');
+    const bubbleCircle = document.getElementById('bubble-circle');
+    const bubbleHex    = document.getElementById('bubble-hex');
+
+    let autoPalette = [];   // from median cut
+    let palette     = [];   // currently shown
+    let pickMode    = false;
+
+    // ── Toast ──────────────────────────────────────────────
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 1800);
+    }
+
+    // ── Color helpers ───────────────────────────────────────
+    function toHex(r, g, b) {
+      return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('').toUpperCase();
+    }
+
+    // ── Median Cut ─────────────────────────────────────────
+    function medianCut(pixels, count) {
+      if (!pixels.length) return [[128,128,128]];
+      let buckets = [pixels];
+
+      while (buckets.length < count) {
+        let bestIdx = 0, bestRange = -1;
+        buckets.forEach((b, i) => {
+          if (b.length < 2) return;
+          let rMn=255,rMx=0,gMn=255,gMx=0,bMn=255,bMx=0;
+          for (const p of b) {
+            if (p[0]<rMn)rMn=p[0]; if (p[0]>rMx)rMx=p[0];
+            if (p[1]<gMn)gMn=p[1]; if (p[1]>gMx)gMx=p[1];
+            if (p[2]<bMn)bMn=p[2]; if (p[2]>bMx)bMx=p[2];
+          }
+          const range = Math.max(rMx-rMn, gMx-gMn, bMx-bMn);
+          if (range > bestRange) { bestRange = range; bestIdx = i; }
+        });
+        if (bestRange < 1) break;
+
+        const bucket = buckets[bestIdx];
+        let rMn=255,rMx=0,gMn=255,gMx=0,bMn=255,bMx=0;
+        for (const p of bucket) {
+          if (p[0]<rMn)rMn=p[0]; if (p[0]>rMx)rMx=p[0];
+          if (p[1]<gMn)gMn=p[1]; if (p[1]>gMx)gMx=p[1];
+          if (p[2]<bMn)bMn=p[2]; if (p[2]>bMx)bMx=p[2];
+        }
+        const ch = [rMx-rMn, gMx-gMn, bMx-bMn].indexOf(Math.max(rMx-rMn, gMx-gMn, bMx-bMn));
+        bucket.sort((a,b) => a[ch]-b[ch]);
+        const mid = Math.floor(bucket.length/2);
+        buckets.splice(bestIdx, 1, bucket.slice(0,mid), bucket.slice(mid));
+      }
+
+      return buckets.filter(b=>b.length>0).map(b => {
+        let r=0,g=0,bl=0;
+        for (const p of b) { r+=p[0]; g+=p[1]; bl+=p[2]; }
+        return [Math.round(r/b.length), Math.round(g/b.length), Math.round(bl/b.length)];
+      }).slice(0, count);
+    }
+
+    // ── Render swatches ────────────────────────────────────
+    function renderSwatches() {
+      swatchesEl.innerHTML = '';
+      palette.forEach(([r,g,b], idx) => {
+        const hex = toHex(r,g,b);
+        const sw = document.createElement('div');
+        sw.className = 'sw';
+        sw.innerHTML = `
+          <div class="sw-color" style="background:${hex}"></div>
+          <div class="sw-info">
+            <div class="sw-hex">${hex}</div>
+            <div class="sw-rgb">${r}, ${g}, ${b}</div>
+          </div>
+          <span class="sw-del" onclick="removeSwatch(${idx})">×</span>`;
+        sw.querySelector('.sw-color').addEventListener('click', () =>
+          navigator.clipboard.writeText(hex).then(() => showToast('Copied ' + hex))
+        );
+        swatchesEl.appendChild(sw);
+      });
+    }
+
+    window.removeSwatch = function(idx) {
+      palette.splice(idx, 1);
+      renderSwatches();
+    };
+
+    // ── Process image ──────────────────────────────────────
+    function process(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          // Draw to display canvas (max 600×280)
+          const scaleD = Math.min(600/img.width, 280/img.height, 1);
+          dispCanvas.width  = Math.max(1, Math.floor(img.width  * scaleD));
+          dispCanvas.height = Math.max(1, Math.floor(img.height * scaleD));
+          dispCtx.drawImage(img, 0, 0, dispCanvas.width, dispCanvas.height);
+
+          // Draw to extraction canvas (max 200×200)
+          const scaleE = Math.min(200/img.width, 200/img.height, 1);
+          extCanvas.width  = Math.max(1, Math.floor(img.width  * scaleE));
+          extCanvas.height = Math.max(1, Math.floor(img.height * scaleE));
+          extCtx.drawImage(img, 0, 0, extCanvas.width, extCanvas.height);
+
+          // Median cut on extraction canvas
+          const { data } = extCtx.getImageData(0, 0, extCanvas.width, extCanvas.height);
+          const pixels = [];
+          for (let i = 0; i < data.length; i += 12) {
+            if (data[i+3] < 128) continue;
+            pixels.push([data[i], data[i+1], data[i+2]]);
+          }
+          autoPalette = medianCut(pixels, 6);
+          autoPalette.sort((a,b) =>
+            (0.299*a[0]+0.587*a[1]+0.114*a[2]) - (0.299*b[0]+0.587*b[1]+0.114*b[2])
+          );
+          palette = [...autoPalette];
+          renderSwatches();
+
+          // Disable pick mode on new image
+          setPickMode(false);
+          result.style.display = 'block';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ── Eyedropper mode ────────────────────────────────────
+    function setPickMode(on) {
+      pickMode = on;
+      canvasWrap.classList.toggle('pick-mode', on);
+      pickBanner.classList.toggle('active', on);
+      eyedropperBtn.classList.toggle('active', on);
+      if (!on) bubble.style.display = 'none';
+    }
+
+    eyedropperBtn.addEventListener('click', () => setPickMode(!pickMode));
+
+    resetBtn.addEventListener('click', () => {
+      palette = [...autoPalette];
+      renderSwatches();
+      setPickMode(false);
+      showToast('자동 추출 색상으로 초기화됐어요');
+    });
+
+    // Get pixel color from display canvas at mouse position
+    function getPixelAt(e) {
+      const rect = dispCanvas.getBoundingClientRect();
+      const scaleX = dispCanvas.width  / rect.width;
+      const scaleY = dispCanvas.height / rect.height;
+      const x = Math.max(0, Math.min(dispCanvas.width  - 1, Math.floor((e.clientX - rect.left)  * scaleX)));
+      const y = Math.max(0, Math.min(dispCanvas.height - 1, Math.floor((e.clientY - rect.top) * scaleY)));
+      const d = dispCtx.getImageData(x, y, 1, 1).data;
+      return [d[0], d[1], d[2]];
+    }
+
+    pickOverlay.addEventListener('mousemove', e => {
+      if (!pickMode) return;
+      const [r,g,b] = getPixelAt(e);
+      const hex = toHex(r,g,b);
+      bubbleCircle.style.background = hex;
+      bubbleHex.textContent = hex;
+      bubble.style.display = 'flex';
+      bubble.style.left = e.clientX + 'px';
+      bubble.style.top  = e.clientY + 'px';
+    });
+
+    pickOverlay.addEventListener('mouseleave', () => {
+      bubble.style.display = 'none';
+    });
+
+    pickOverlay.addEventListener('click', e => {
+      if (!pickMode) return;
+      const color = getPixelAt(e);
+      palette.push(color);
+      renderSwatches();
+      showToast('색상 추가됨! ' + toHex(...color));
+    });
+
+    // ── Copy all ───────────────────────────────────────────
+    copyAllBtn.addEventListener('click', () => {
+      if (!palette.length) return;
+      navigator.clipboard.writeText(palette.map(([r,g,b]) => toHex(r,g,b)).join(', '))
+        .then(() => showToast('Copied all!'));
+    });
+
+    // ── Drop zone ──────────────────────────────────────────
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+    dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); process(e.dataTransfer.files[0]); });
+    fi.addEventListener('change', e => process(e.target.files[0]));
+  </script>
+</body>
+</html>
