@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Typing Boss Fight</title>
+  <title>타이핑 보스전</title>
   <style>
     :root {
       --bg-1: #120f1d;
@@ -488,21 +488,21 @@
   <main class="app">
     <section class="header">
       <div>
-        <h1 class="title">Typing Boss Fight</h1>
-        <p class="subtitle">You have 60 seconds. Type the attack words exactly, keep the combo alive, and break the boss before your focus bar gets erased.</p>
+        <h1 class="title">타이핑 보스전</h1>
+        <p class="subtitle">60초 안에 공격 단어를 정확히 입력하고, 콤보를 유지하면서 집중력 게이지가 바닥나기 전에 보스를 무너뜨리세요.</p>
       </div>
       <div class="top-stats">
-        <div class="stat"><div class="stat-label">Time</div><div class="stat-value" id="time">60</div></div>
-        <div class="stat"><div class="stat-label">Combo</div><div class="stat-value" id="combo">0</div></div>
-        <div class="stat"><div class="stat-label">Score</div><div class="stat-value" id="score">0</div></div>
-        <div class="stat"><div class="stat-label">Best</div><div class="stat-value" id="best">0</div></div>
+        <div class="stat"><div class="stat-label">시간</div><div class="stat-value" id="time">60</div></div>
+        <div class="stat"><div class="stat-label">콤보</div><div class="stat-value" id="combo">0</div></div>
+        <div class="stat"><div class="stat-label">점수</div><div class="stat-value" id="score">0</div></div>
+        <div class="stat"><div class="stat-label">최고점</div><div class="stat-value" id="best">0</div></div>
       </div>
     </section>
 
     <section class="arena">
       <div class="left">
         <div class="boss-stage">
-          <div class="burst" id="burst">Critical Hit</div>
+          <div class="burst" id="burst">치명타</div>
           <div class="boss-wrap">
             <div class="boss" id="boss">
               <div class="boss-face">
@@ -515,11 +515,11 @@
         </div>
         <div class="bars">
           <div class="bar-card">
-            <div class="bar-head"><span>Boss HP</span><span id="boss-hp-label">100 / 100</span></div>
+            <div class="bar-head"><span>보스 체력</span><span id="boss-hp-label">100 / 100</span></div>
             <div class="track"><div class="fill boss-fill" id="boss-bar"></div></div>
           </div>
           <div class="bar-card">
-            <div class="bar-head"><span>Focus Shield</span><span id="player-hp-label">100 / 100</span></div>
+            <div class="bar-head"><span>집중력 방어막</span><span id="player-hp-label">100 / 100</span></div>
             <div class="track"><div class="fill player-fill" id="player-bar"></div></div>
           </div>
         </div>
@@ -527,52 +527,52 @@
 
       <div class="right">
         <div class="prompt-card">
-          <div class="section-kicker">Current Spell</div>
-          <div class="prompt-word" id="word">Press start</div>
-          <div class="prompt-desc" id="hint">Each correct word deals damage. Fast chains raise combo and add bonus damage.</div>
+          <div class="section-kicker">현재 주문</div>
+          <div class="prompt-word" id="word">시작 버튼을 누르세요</div>
+          <div class="prompt-desc" id="hint">정답 단어를 입력할 때마다 피해를 줍니다. 빠르게 연속 성공하면 콤보와 추가 피해가 올라갑니다.</div>
         </div>
 
         <div class="input-card">
-          <div class="section-kicker">Type Here</div>
+          <div class="section-kicker">입력 칸</div>
           <div class="typing-row">
-            <input id="input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the spell exactly" />
-            <button id="submit">Hit</button>
+            <input id="input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="주문을 정확히 입력하세요" />
+            <button id="submit">공격</button>
           </div>
           <div class="feedback" id="feedback"></div>
         </div>
 
         <div class="log-card">
-          <div class="section-kicker">Battle Feed</div>
-          <div class="log-item"><span>Boss pattern</span><strong id="pattern">Waiting...</strong></div>
-          <div class="log-item"><span>Last hit</span><strong id="last-hit">0 dmg</strong></div>
-          <div class="log-item"><span>Accuracy</span><strong id="accuracy">0%</strong></div>
-          <div class="log-item"><span>Misses</span><strong id="misses">0</strong></div>
+          <div class="section-kicker">전투 정보</div>
+          <div class="log-item"><span>보스 패턴</span><strong id="pattern">대기 중...</strong></div>
+          <div class="log-item"><span>마지막 타격</span><strong id="last-hit">0 피해</strong></div>
+          <div class="log-item"><span>정확도</span><strong id="accuracy">0%</strong></div>
+          <div class="log-item"><span>실수</span><strong id="misses">0</strong></div>
         </div>
       </div>
     </section>
 
     <div class="overlay" id="overlay">
       <div class="overlay-card">
-        <h2 id="overlay-title">Ready</h2>
-        <p id="overlay-copy">Type the glowing words, keep the rhythm, and survive the boss pressure. One round lasts exactly 60 seconds.</p>
-        <p class="small" id="overlay-stats">Enter or Hit button to attack</p>
-        <button id="start">Start Round</button>
+        <h2 id="overlay-title">준비</h2>
+        <p id="overlay-copy">빛나는 단어를 입력하고 리듬을 유지하면서 보스의 압박을 버티세요. 한 판은 정확히 60초입니다.</p>
+        <p class="small" id="overlay-stats">엔터 또는 공격 버튼으로 타격</p>
+        <button id="start">시작</button>
       </div>
     </div>
   </main>
 
   <script>
     const SPELLS = [
-      { word: "ember", hint: "Short burst. Safe starter word.", pattern: "single blast" },
-      { word: "overdrive", hint: "Longer spell. Good combo builder.", pattern: "heat surge" },
-      { word: "static bloom", hint: "Two words. Keep the spacing exact.", pattern: "split pulse" },
-      { word: "night shift", hint: "Boss slows, then strikes harder.", pattern: "delayed swing" },
-      { word: "sundown", hint: "Quick damage with clean rhythm.", pattern: "snap strike" },
-      { word: "vector heart", hint: "A designer-core finisher spell.", pattern: "angled arc" },
-      { word: "afterimage", hint: "Medium spell. Great for score pushes.", pattern: "ghost trail" },
-      { word: "signal fire", hint: "Two-word attack. Stay precise.", pattern: "flare wave" },
-      { word: "velvet glitch", hint: "Rare spell. Strong critical odds.", pattern: "glitch break" },
-      { word: "glass tiger", hint: "Rare spell. High reward if typed cleanly.", pattern: "shatter rush" }
+      { word: "불씨", hint: "짧은 폭발형 주문. 시작용으로 안전합니다.", pattern: "단일 폭발" },
+      { word: "오버드라이브", hint: "조금 더 긴 주문. 콤보를 쌓기 좋습니다.", pattern: "열기 폭주" },
+      { word: "정적 개화", hint: "두 단어 주문. 띄어쓰기까지 정확해야 합니다.", pattern: "분열 파동" },
+      { word: "야간 교대", hint: "보스가 잠깐 느려졌다가 강하게 칩니다.", pattern: "지연 강타" },
+      { word: "일몰", hint: "리듬만 맞으면 빠르게 피해를 줄 수 있습니다.", pattern: "순간 타격" },
+      { word: "벡터 하트", hint: "디자인 감성의 마무리 주문입니다.", pattern: "각도 파열" },
+      { word: "잔상", hint: "중간 길이 주문. 점수 올리기에 좋습니다.", pattern: "유령 궤적" },
+      { word: "신호탄", hint: "두 단어 공격. 정확도가 중요합니다.", pattern: "화염 파동" },
+      { word: "벨벳 글리치", hint: "희귀 주문. 치명타 확률이 높습니다.", pattern: "글리치 붕괴" },
+      { word: "유리 호랑이", hint: "희귀 주문. 정확히 치면 보상이 큽니다.", pattern: "파쇄 돌진" }
     ];
 
     const MAX_TIME = 60;
@@ -676,13 +676,13 @@
       state.bossHp = Math.max(0, state.bossHp - damage);
       state.score += damage * 10 + state.combo * 3;
       state.totalHits += 1;
-      els.lastHit.textContent = `${damage} dmg`;
+      els.lastHit.textContent = `${damage} 피해`;
       updateStats();
 
       els.boss.classList.remove("hit");
       void els.boss.offsetWidth;
       els.boss.classList.add("hit");
-      flashBurst(critical ? "Critical Hit" : `+${damage} dmg`);
+      flashBurst(critical ? "치명타" : `+${damage} 피해`);
 
       if (state.score > best) {
         best = state.score;
@@ -694,8 +694,8 @@
         state.bossHp = MAX_HP;
         state.time = Math.min(MAX_TIME, state.time + 6);
         state.score += 500;
-        showFeedback("Boss broken. New form spawned and +6 seconds awarded.", "good");
-        flashBurst("Boss Break");
+        showFeedback("보스를 무너뜨렸습니다. 새 형태가 등장하고 시간 6초가 추가됩니다.", "good");
+        flashBurst("보스 브레이크");
         updateStats();
       }
     }
@@ -705,9 +705,9 @@
       const damage = Math.min(18, 7 + Math.floor(state.time / 10) + Math.floor(Math.random() * 4));
       state.playerHp = Math.max(0, state.playerHp - damage);
       state.combo = Math.max(0, state.combo - 1);
-      showFeedback(`Boss hit your focus for ${damage}.`, "bad");
+      showFeedback(`보스가 집중력에 ${damage} 피해를 줬습니다.`, "bad");
       updateStats();
-      if (state.playerHp <= 0) endGame("Focus Lost", "The boss broke your shield before time ran out.");
+      if (state.playerHp <= 0) endGame("집중력 붕괴", "시간이 끝나기 전에 보스가 당신의 방어막을 부쉈습니다.");
     }
 
     function handleSubmit() {
@@ -720,17 +720,17 @@
         const critical = Math.random() < Math.min(0.35, 0.1 + state.combo * 0.02);
         const damage = 8 + Math.min(14, state.combo) + (critical ? 8 : 0);
         hitBoss(damage, critical);
-        showFeedback(critical ? "Perfect rhythm. Critical strike." : "Clean hit landed.", "good");
+        showFeedback(critical ? "완벽한 리듬. 치명타 성공." : "깔끔하게 적중했습니다.", "good");
         setSpell(pickSpell());
       } else {
         state.misses += 1;
         state.combo = 0;
         state.playerHp = Math.max(0, state.playerHp - 5);
-        els.lastHit.textContent = "miss";
-        showFeedback("Miss. Exact spacing and spelling matter.", "bad");
+        els.lastHit.textContent = "실패";
+        showFeedback("실수했습니다. 철자와 띄어쓰기를 정확히 맞춰야 합니다.", "bad");
         updateStats();
         if (state.playerHp <= 0) {
-          endGame("Focus Lost", "Too many mistakes collapsed your shield.");
+          endGame("집중력 붕괴", "실수가 누적되어 방어막이 무너졌습니다.");
           els.input.value = "";
           return;
         }
@@ -743,7 +743,7 @@
       if (!state.running) return;
       state.time -= 1;
       updateStats();
-      if (state.time <= 0) endGame("Time Up", "The round ended. Your final score is locked.");
+      if (state.time <= 0) endGame("시간 종료", "라운드가 끝났습니다. 최종 점수가 기록됩니다.");
     }
 
     function clearTimers() {
@@ -758,8 +758,8 @@
       clearTimers();
       els.overlayTitle.textContent = title;
       els.overlayCopy.textContent = copy;
-      els.overlayStats.textContent = `Score ${state.score} · Accuracy ${getAccuracy()}% · Best ${best}`;
-      els.start.textContent = "Play Again";
+      els.overlayStats.textContent = `점수 ${state.score} · 정확도 ${getAccuracy()}% · 최고점 ${best}`;
+      els.start.textContent = "다시 하기";
       els.overlay.classList.remove("hidden");
     }
 
@@ -767,11 +767,11 @@
       clearTimers();
       resetState();
       state.running = true;
-      els.start.textContent = "Start Round";
+      els.start.textContent = "시작";
       els.overlay.classList.add("hidden");
       setSpell(state.spell);
-      showFeedback("Type fast. The boss attacks every few seconds.");
-      els.lastHit.textContent = "0 dmg";
+      showFeedback("빠르게 입력하세요. 보스는 몇 초마다 공격합니다.");
+      els.lastHit.textContent = "0 피해";
       updateStats();
       els.input.value = "";
       els.input.focus();

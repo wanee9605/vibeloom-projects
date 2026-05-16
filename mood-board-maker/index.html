@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mood Board Maker</title>
+  <title>무드보드 메이커</title>
   <style>
     :root {
       --ink: #171217;
@@ -324,17 +324,17 @@
   <main class="app">
     <section class="top">
       <div>
-        <h1 class="title">Mood Board Maker</h1>
-        <p class="lead">Switch between outfit and room mode, stack a few vibes, then generate a ready-made board that feels like a fast creative direction sheet.</p>
+        <h1 class="title">무드보드 메이커</h1>
+        <p class="lead">의상 모드와 공간 모드를 오가며 몇 가지 분위기를 고른 뒤, 빠르게 방향성을 보여주는 무드보드를 바로 만들어보세요.</p>
       </div>
       <div class="top-side">
         <div>
-          <div class="meta-label">Current Direction</div>
-          <div class="meta-value" id="current-direction">Outfit / Clean Girl</div>
+          <div class="meta-label">현재 방향</div>
+          <div class="meta-value" id="current-direction">의상 / 클린걸</div>
         </div>
         <div>
-          <div class="meta-label">Saved Snapshot</div>
-          <div class="meta-value" id="saved-snapshot">None</div>
+          <div class="meta-label">저장된 스냅샷</div>
+          <div class="meta-value" id="saved-snapshot">없음</div>
         </div>
       </div>
     </section>
@@ -344,35 +344,35 @@
         <div class="section">
           <div class="section-title">Mode</div>
           <div class="mode-row">
-            <button class="mode-btn active" data-mode="outfit">Outfit</button>
-            <button class="mode-btn" data-mode="room">Room</button>
+            <button class="mode-btn active" data-mode="outfit">의상</button>
+            <button class="mode-btn" data-mode="room">공간</button>
           </div>
-          <p class="mini-text" id="mode-copy">Fashion-focused board with silhouettes, textures, and styling notes.</p>
+          <p class="mini-text" id="mode-copy">실루엣, 질감, 스타일링 메모를 중심으로 한 패션 무드보드입니다.</p>
         </div>
 
         <div class="section">
-          <div class="section-title">Vibes</div>
+          <div class="section-title">분위기</div>
           <div class="chip-row" id="chips"></div>
           <p class="mini-text">Pick up to three. The board remixes cards, palette, and copy around those tags.</p>
         </div>
 
         <div class="section">
-          <div class="section-title">Palette</div>
+          <div class="section-title">팔레트</div>
           <div class="swatch" id="palette"></div>
         </div>
 
         <div class="section">
-          <div class="section-title">Summary</div>
+          <div class="section-title">요약</div>
           <div class="summary" id="summary"></div>
         </div>
 
         <div class="section">
-          <div class="section-title">Actions</div>
+          <div class="section-title">동작</div>
           <div class="actions">
-            <button class="action-btn" id="generate">Generate</button>
-            <button class="action-btn" id="shuffle">Shuffle</button>
-            <button class="action-btn" id="save">Save Snapshot</button>
-            <button class="action-btn" id="clear">Clear</button>
+            <button class="action-btn" id="generate">생성</button>
+            <button class="action-btn" id="shuffle">섞기</button>
+            <button class="action-btn" id="save">스냅샷 저장</button>
+            <button class="action-btn" id="clear">초기화</button>
           </div>
         </div>
       </aside>
@@ -380,8 +380,8 @@
       <section class="board-area">
         <div class="board-head">
           <div>
-            <h2 class="board-title" id="board-title">Outfit Board</h2>
-            <p class="board-note" id="board-note">Select a few vibes and generate a composed direction board.</p>
+            <h2 class="board-title" id="board-title">의상 보드</h2>
+            <p class="board-note" id="board-note">몇 가지 분위기를 고른 뒤 정리된 방향 보드를 생성해보세요.</p>
           </div>
         </div>
         <div class="board-grid" id="board"></div>
@@ -389,79 +389,79 @@
     </section>
 
     <div class="footer-bar">
-      <span>Made for quick Vercel demos: no assets, no backend, just one clean interactive page.</span>
-      <span id="footer-tags">Vibes: clean girl</span>
+      <span>빠른 Vercel 데모용으로 만든 페이지입니다. 별도 에셋이나 백엔드 없이 한 화면에서 동작합니다.</span>
+      <span id="footer-tags">분위기: 클린걸</span>
     </div>
   </main>
 
   <script>
     const DATA = {
       outfit: {
-        label: "Outfit",
-        copy: "Fashion-focused board with silhouettes, textures, and styling notes.",
+        label: "의상",
+        copy: "실루엣, 질감, 스타일링 메모를 중심으로 한 패션 무드보드입니다.",
         vibes: {
-          "clean girl": {
+          "클린걸": {
             palette: ["#f6f0e8", "#dccfbe", "#af9b89", "#6e6056"],
-            summary: "Polished essentials, glossy textures, soft neutrals, and sharp basics that feel expensive without looking loud."
+            summary: "정돈된 기본 아이템, 은은한 광택, 부드러운 뉴트럴 톤, 과하지 않지만 고급스럽게 보이는 선명한 베이직이 핵심입니다."
           },
-          "brat pop": {
+          "브랫 팝": {
             palette: ["#d7ff34", "#1f1f1f", "#f46fb7", "#6c44ff"],
-            summary: "Charged color, playful attitude, loud contrast, and styling details that feel ironic and photogenic."
+            summary: "강한 색감, 장난기 있는 태도, 큰 대비, 사진에 잘 받는 아이러니한 스타일링 디테일이 중심입니다."
           },
-          "quiet luxury": {
+          "조용한 럭셔리": {
             palette: ["#f4efe7", "#c7bba9", "#7d715f", "#2d2723"],
-            summary: "Tailored layers, creamy textures, restrained polish, and pieces that read calm but premium."
+            summary: "테일러드 레이어, 크리미한 질감, 절제된 윤기, 조용하지만 확실히 고급스러운 아이템 조합이 중요합니다."
           },
-          "street racer": {
+          "스트리트 레이서": {
             palette: ["#111111", "#575d68", "#d74343", "#ecebe8"],
-            summary: "Fast shapes, low-slung silhouettes, technical fabrics, and a darker sporty edge."
+            summary: "속도감 있는 형태, 낮고 길게 떨어지는 실루엣, 기능성 소재, 어두운 스포티 무드가 포인트입니다."
           },
-          "romantic vintage": {
+          "로맨틱 빈티지": {
             palette: ["#f4e7ea", "#cf9ca7", "#8d6172", "#4b3742"],
-            summary: "Lace notes, faded bloom tones, antique softness, and delicate styling layered with nostalgia."
+            summary: "레이스 디테일, 바랜 꽃빛 톤, 앤틱한 부드러움, 향수를 얹은 섬세한 스타일링이 핵심입니다."
           }
         },
         cards: [
-          { type: "large", title: "Hero Look", copy: "Main silhouette with statement proportion and anchor styling piece.", tag: "look", bg: "linear-gradient(135deg,#cabfb4,#9d8b7b)" },
-          { type: "tall", title: "Texture Study", copy: "Fabric touchpoints: knit, leather, washed cotton, sheer overlay.", tag: "texture", bg: "linear-gradient(160deg,#7d715f,#2d2723)" },
-          { type: "medium", title: "Detail Notes", copy: "Jewelry, shoes, bag shape, glasses, and finish direction.", tag: "details", bg: "linear-gradient(135deg,#d36a78,#6d4f6d)" },
-          { type: "wide", title: "Wardrobe Formula", copy: "Simple repeatable structure for turning the vibe into multiple outfits.", tag: "formula", bg: "linear-gradient(135deg,#f0d6ba,#b99d82)" },
-          { type: "medium", title: "Beauty Pairing", copy: "Hair, lip, and nail choices that tighten the visual language.", tag: "beauty", bg: "linear-gradient(135deg,#e9d7dc,#ad7c87)" },
-          { type: "tall", title: "Accent Piece", copy: "One object that pushes the board from safe to memorable.", tag: "accent", bg: "linear-gradient(135deg,#4f4a52,#161419)" }
+          { type: "large", title: "메인 룩", copy: "비율감이 살아 있는 핵심 실루엣과 전체 무드를 잡아주는 앵커 아이템.", tag: "룩", bg: "linear-gradient(135deg,#cabfb4,#9d8b7b)" },
+          { type: "tall", title: "질감 연구", copy: "니트, 가죽, 워싱 코튼, 시어 레이어처럼 손끝에서 느껴지는 소재 포인트.", tag: "질감", bg: "linear-gradient(160deg,#7d715f,#2d2723)" },
+          { type: "medium", title: "디테일 노트", copy: "주얼리, 신발, 가방 형태, 안경, 마감 방향까지 정리하는 보조 정보.", tag: "디테일", bg: "linear-gradient(135deg,#d36a78,#6d4f6d)" },
+          { type: "wide", title: "스타일 공식", copy: "하나의 분위기를 여러 착장으로 반복 확장할 수 있는 간단한 조합 공식.", tag: "공식", bg: "linear-gradient(135deg,#f0d6ba,#b99d82)" },
+          { type: "medium", title: "뷰티 페어링", copy: "헤어, 립, 네일 선택으로 전체 비주얼 언어를 단단하게 묶어주는 구간.", tag: "뷰티", bg: "linear-gradient(135deg,#e9d7dc,#ad7c87)" },
+          { type: "tall", title: "포인트 아이템", copy: "평범한 보드를 기억에 남게 바꾸는 단 하나의 강한 오브제.", tag: "포인트", bg: "linear-gradient(135deg,#4f4a52,#161419)" }
         }
       },
       room: {
-        label: "Room",
-        copy: "Interior-focused board with lighting, furniture tone, materials, and object styling.",
+        label: "공간",
+        copy: "조명, 가구 톤, 소재, 오브제 스타일링을 중심으로 한 인테리어 무드보드입니다.",
         vibes: {
-          "soft minimal": {
+          "소프트 미니멀": {
             palette: ["#f8f3ea", "#d8cdbf", "#a69580", "#706356"],
-            summary: "Low-contrast calm, warm daylight, natural materials, and restrained decor that keeps the space airy."
+            summary: "대비를 낮춘 평온함, 따뜻한 자연광, 자연 소재, 공기를 가볍게 유지하는 절제된 장식이 중심입니다."
           },
-          "retro glow": {
+          "레트로 글로우": {
             palette: ["#efb25d", "#d36a78", "#6d4f6d", "#1d1a2d"],
-            summary: "Lamp-lit corners, curved forms, smoky colors, and a nostalgic late-night warmth."
+            summary: "스탠드 조명이 비추는 코너, 곡선형 형태, 연기 낀 듯한 색감, 밤의 향수를 품은 따뜻함이 핵심입니다."
           },
-          "chrome future": {
+          "크롬 퓨처": {
             palette: ["#eef2f7", "#aeb9c9", "#64748b", "#151821"],
-            summary: "Reflective surfaces, cool shadows, sculptural shapes, and a clean futuristic edge."
+            summary: "반사되는 표면, 차가운 그림자, 조형적인 형태, 매끈한 미래적 긴장감이 중심입니다."
           },
-          "earthy studio": {
+          "어시 스튜디오": {
             palette: ["#f1e2c8", "#b48a5b", "#697258", "#39342f"],
-            summary: "Clay tones, plant life, imperfect texture, and furniture that feels collected rather than matched."
+            summary: "점토빛 색감, 식물의 생기, 완벽하지 않은 질감, 세트보다 수집된 듯한 가구 조합이 매력입니다."
           },
-          "coquette room": {
+          "코케트 룸": {
             palette: ["#fff0f4", "#f5bfd0", "#d36a78", "#78546c"],
-            summary: "Ribbons, vanity gloss, dreamy light, and sweet feminine decor with layered softness."
+            summary: "리본, 화장대의 광택, 몽환적인 빛, 겹겹의 부드러움을 가진 사랑스러운 장식이 포인트입니다."
           }
         },
         cards: [
-          { type: "large", title: "Main Zone", copy: "The dominant corner or bed area that defines the room identity.", tag: "zone", bg: "linear-gradient(135deg,#f2e6d8,#b8a18f)" },
-          { type: "medium", title: "Lighting Mood", copy: "Lamp color, shadow softness, and time-of-day atmosphere.", tag: "light", bg: "linear-gradient(135deg,#d8a45f,#6d4f6d)" },
-          { type: "tall", title: "Material Story", copy: "Wood, chrome, linen, glass, boucle, tile, or lacquer.", tag: "materials", bg: "linear-gradient(160deg,#697258,#39342f)" },
-          { type: "wide", title: "Object Layer", copy: "Books, frames, candles, trays, flowers, and casual surface styling.", tag: "objects", bg: "linear-gradient(135deg,#f6d3dc,#a56f8b)" },
-          { type: "medium", title: "Color Anchor", copy: "Where the strongest accent tone should live in the room.", tag: "anchor", bg: "linear-gradient(135deg,#97a8c8,#e8ecf2)" },
-          { type: "tall", title: "Texture Contrast", copy: "Smooth versus rough surfaces that keep the space from flattening out.", tag: "contrast", bg: "linear-gradient(135deg,#d1cabd,#8f8578)" }
+          { type: "large", title: "메인 존", copy: "방의 정체성을 결정하는 핵심 코너 또는 침대 주변의 중심 장면.", tag: "존", bg: "linear-gradient(135deg,#f2e6d8,#b8a18f)" },
+          { type: "medium", title: "조명 무드", copy: "램프 색, 그림자의 부드러움, 시간대에 따른 공기감을 정리하는 파트.", tag: "조명", bg: "linear-gradient(135deg,#d8a45f,#6d4f6d)" },
+          { type: "tall", title: "소재 이야기", copy: "우드, 크롬, 린넨, 유리, 부클레, 타일, 래커 같은 재료 언어를 정리합니다.", tag: "소재", bg: "linear-gradient(160deg,#697258,#39342f)" },
+          { type: "wide", title: "오브제 레이어", copy: "책, 액자, 캔들, 트레이, 꽃처럼 표면 위에 쌓이는 생활 오브제의 분위기.", tag: "오브제", bg: "linear-gradient(135deg,#f6d3dc,#a56f8b)" },
+          { type: "medium", title: "컬러 앵커", copy: "가장 강한 포인트 컬러를 방 안 어디에 둘지 결정하는 기준점.", tag: "컬러", bg: "linear-gradient(135deg,#97a8c8,#e8ecf2)" },
+          { type: "tall", title: "질감 대비", copy: "매끈함과 거침이 서로 부딪히며 공간이 납작해지지 않도록 만드는 대비.", tag: "대비", bg: "linear-gradient(135deg,#d1cabd,#8f8578)" }
         }
       }
     };
@@ -487,13 +487,13 @@
     const snapshotKey = "mood-board-snapshot";
     let state = {
       mode: "outfit",
-      selected: ["clean girl"],
+      selected: ["클린걸"],
       seed: 0
     };
 
     function formatDirection() {
       const modeLabel = DATA[state.mode].label;
-      const vibeLabel = state.selected.length ? state.selected.join(", ") : "no vibe";
+      const vibeLabel = state.selected.length ? state.selected.join(", ") : "선택 없음";
       return `${modeLabel} / ${vibeLabel}`;
     }
 
@@ -505,7 +505,7 @@
       const vibeMap = DATA[state.mode].vibes;
       const selectedEntries = state.selected.map((key) => vibeMap[key]);
       if (!selectedEntries.length) {
-        return "Choose a vibe to turn the board into a specific direction. The generated cards will update automatically.";
+        return "분위기를 고르면 보드가 더 분명한 방향성을 갖게 됩니다. 생성되는 카드와 설명도 함께 바뀝니다.";
       }
       return selectedEntries.map((entry) => entry.summary).join(" ");
     }
@@ -521,7 +521,7 @@
     function renderBoard() {
       const baseCards = [...DATA[state.mode].cards];
       if (!state.selected.length) {
-        els.board.innerHTML = `<div class="empty">Pick at least one vibe, then press Generate. This board is designed to feel presentable on first load for Vercel testing.</div>`;
+        els.board.innerHTML = `<div class="empty">분위기를 하나 이상 고른 뒤 생성 버튼을 눌러보세요. 첫 화면에서도 Vercel 데모처럼 바로 보여줄 수 있게 구성했습니다.</div>`;
         return;
       }
 
@@ -565,10 +565,10 @@
       renderPalette(mixedPalette());
       renderBoard();
       els.summary.textContent = buildSummary();
-      els.boardTitle.textContent = `${DATA[state.mode].label} Board`;
+      els.boardTitle.textContent = `${DATA[state.mode].label} 보드`;
       els.boardNote.textContent = DATA[state.mode].copy;
       els.modeCopy.textContent = DATA[state.mode].copy;
-      els.footerTags.textContent = `Vibes: ${state.selected.length ? state.selected.join(", ") : "none"}`;
+      els.footerTags.textContent = `분위기: ${state.selected.length ? state.selected.join(", ") : "없음"}`;
       els.currentDirection.textContent = formatDirection();
       updateModeButtons();
     }
@@ -607,7 +607,7 @@
           els.savedSnapshot.textContent = `${DATA[saved.mode].label} / ${saved.selected.join(", ")}`;
         }
       } catch (error) {
-        els.savedSnapshot.textContent = "None";
+        els.savedSnapshot.textContent = "없음";
       }
     }
 
