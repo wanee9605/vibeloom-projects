@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mood Board Maker</title>
+  <style>
+    :root {
+      --ink: #171217;
+      --paper: #f6f0e8;
+      --stone: #c0b7ab;
+      --line: rgba(23, 18, 23, 0.12);
+      --rose: #d36a78;
+      --moss: #5b6d57;
+      --sand: #e6c7a1;
+      --sky: #97a8c8;
+      --plum: #6d4f6d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(151, 168, 200, 0.28), transparent 28%),
+        radial-gradient(circle at 80% 10%, rgba(211, 106, 120, 0.22), transparent 26%),
+        linear-gradient(135deg, #f4ede4, #f8f4ef 55%, #ece4d8);
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      padding: 22px;
+    }
+
+    .app {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 32px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 28px 80px rgba(70, 48, 39, 0.14);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-end;
+      padding: 28px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05)),
+        linear-gradient(135deg, rgba(151,168,200,0.08), rgba(211,106,120,0.08));
+    }
+
+    .title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2rem, 4vw, 4rem);
+      letter-spacing: 0.03em;
+      line-height: 0.9;
+      text-transform: uppercase;
+    }
+
+    .lead {
+      margin-top: 12px;
+      max-width: 42rem;
+      color: #5c5159;
+      line-height: 1.6;
+    }
+
+    .top-side {
+      display: grid;
+      gap: 10px;
+      text-align: right;
+      min-width: 250px;
+    }
+
+    .meta-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #786b71;
+    }
+
+    .meta-value {
+      font-family: "Courier New", monospace;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      min-height: 760px;
+    }
+
+    .controls {
+      padding: 28px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.44);
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .section {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.58);
+    }
+
+    .section-title {
+      font-size: 0.76rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #7d7076;
+      margin-bottom: 14px;
+    }
+
+    .mode-row,
+    .chip-row,
+    .palette-row,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .mode-btn,
+    .chip,
+    .action-btn {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.85);
+      color: var(--ink);
+      padding: 11px 16px;
+      cursor: pointer;
+      font: inherit;
+      transition: 160ms ease;
+    }
+
+    .mode-btn.active,
+    .chip.active,
+    .action-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+      transform: translateY(-1px);
+    }
+
+    .mode-btn.active[data-mode="outfit"] { background: var(--plum); }
+    .mode-btn.active[data-mode="room"] { background: var(--moss); }
+
+    .mini-text {
+      margin-top: 12px;
+      color: #6f6466;
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .swatch {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .swatch-bar {
+      height: 34px;
+    }
+
+    .summary {
+      line-height: 1.7;
+      color: #544a4e;
+      min-height: 5.2em;
+    }
+
+    .board-area {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.16), transparent),
+        linear-gradient(135deg, rgba(151,168,200,0.05), rgba(211,106,120,0.04));
+    }
+
+    .board-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .board-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(1.7rem, 3vw, 2.8rem);
+      text-transform: uppercase;
+      line-height: 0.95;
+    }
+
+    .board-note {
+      color: #6f6466;
+      margin-top: 8px;
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      min-height: 620px;
+    }
+
+    .tile {
+      position: relative;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid rgba(23, 18, 23, 0.08);
+      background: white;
+      box-shadow: 0 18px 40px rgba(78, 64, 57, 0.09);
+      min-height: 150px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 24px 50px rgba(78, 64, 57, 0.13);
+    }
+
+    .tile::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.48), transparent 20%),
+        linear-gradient(180deg, transparent 0 45%, rgba(0,0,0,0.26));
+      pointer-events: none;
+    }
+
+    .tile.large { grid-column: span 5; min-height: 290px; }
+    .tile.medium { grid-column: span 4; min-height: 220px; }
+    .tile.tall { grid-column: span 3; min-height: 290px; }
+    .tile.wide { grid-column: span 6; min-height: 170px; }
+
+    .tile-tag,
+    .tile-meta {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tile-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.74);
+      width: fit-content;
+      margin-bottom: 10px;
+      font-size: 0.74rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .tile-meta h3 {
+      font-size: 1.25rem;
+      font-family: Georgia, "Times New Roman", serif;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .tile-meta p {
+      color: rgba(255,255,255,0.86);
+      line-height: 1.45;
+      font-size: 0.95rem;
+      max-width: 28ch;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      min-height: 420px;
+      border: 1px dashed rgba(23, 18, 23, 0.18);
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      color: #7f7376;
+      background: rgba(255,255,255,0.4);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 20px 28px 28px;
+      color: #6f6466;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .controls { border-right: 0; border-bottom: 1px solid var(--line); }
+      .top { display: grid; text-align: left; }
+      .top-side { text-align: left; min-width: 0; }
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 12px; }
+      .top, .controls, .board-area { padding: 20px; }
+      .board-grid { grid-template-columns: 1fr; min-height: 0; }
+      .tile.large, .tile.medium, .tile.tall, .tile.wide { grid-column: span 1; min-height: 220px; }
+      .footer-bar { padding: 18px 20px 20px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="top">
+      <div>
+        <h1 class="title">Mood Board Maker</h1>
+        <p class="lead">Switch between outfit and room mode, stack a few vibes, then generate a ready-made board that feels like a fast creative direction sheet.</p>
+      </div>
+      <div class="top-side">
+        <div>
+          <div class="meta-label">Current Direction</div>
+          <div class="meta-value" id="current-direction">Outfit / Clean Girl</div>
+        </div>
+        <div>
+          <div class="meta-label">Saved Snapshot</div>
+          <div class="meta-value" id="saved-snapshot">None</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="controls">
+        <div class="section">
+          <div class="section-title">Mode</div>
+          <div class="mode-row">
+            <button class="mode-btn active" data-mode="outfit">Outfit</button>
+            <button class="mode-btn" data-mode="room">Room</button>
+          </div>
+          <p class="mini-text" id="mode-copy">Fashion-focused board with silhouettes, textures, and styling notes.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Vibes</div>
+          <div class="chip-row" id="chips"></div>
+          <p class="mini-text">Pick up to three. The board remixes cards, palette, and copy around those tags.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Palette</div>
+          <div class="swatch" id="palette"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Summary</div>
+          <div class="summary" id="summary"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Actions</div>
+          <div class="actions">
+            <button class="action-btn" id="generate">Generate</button>
+            <button class="action-btn" id="shuffle">Shuffle</button>
+            <button class="action-btn" id="save">Save Snapshot</button>
+            <button class="action-btn" id="clear">Clear</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="board-area">
+        <div class="board-head">
+          <div>
+            <h2 class="board-title" id="board-title">Outfit Board</h2>
+            <p class="board-note" id="board-note">Select a few vibes and generate a composed direction board.</p>
+          </div>
+        </div>
+        <div class="board-grid" id="board"></div>
+      </section>
+    </section>
+
+    <div class="footer-bar">
+      <span>Made for quick Vercel demos: no assets, no backend, just one clean interactive page.</span>
+      <span id="footer-tags">Vibes: clean girl</span>
+    </div>
+  </main>
+
+  <script>
+    const DATA = {
+      outfit: {
+        label: "Outfit",
+        copy: "Fashion-focused board with silhouettes, textures, and styling notes.",
+        vibes: {
+          "clean girl": {
+            palette: ["#f6f0e8", "#dccfbe", "#af9b89", "#6e6056"],
+            summary: "Polished essentials, glossy textures, soft neutrals, and sharp basics that feel expensive without looking loud."
+          },
+          "brat pop": {
+            palette: ["#d7ff34", "#1f1f1f", "#f46fb7", "#6c44ff"],
+            summary: "Charged color, playful attitude, loud contrast, and styling details that feel ironic and photogenic."
+          },
+          "quiet luxury": {
+            palette: ["#f4efe7", "#c7bba9", "#7d715f", "#2d2723"],
+            summary: "Tailored layers, creamy textures, restrained polish, and pieces that read calm but premium."
+          },
+          "street racer": {
+            palette: ["#111111", "#575d68", "#d74343", "#ecebe8"],
+            summary: "Fast shapes, low-slung silhouettes, technical fabrics, and a darker sporty edge."
+          },
+          "romantic vintage": {
+            palette: ["#f4e7ea", "#cf9ca7", "#8d6172", "#4b3742"],
+            summary: "Lace notes, faded bloom tones, antique softness, and delicate styling layered with nostalgia."
+          }
+        },
+        cards: [
+          { type: "large", title: "Hero Look", copy: "Main silhouette with statement proportion and anchor styling piece.", tag: "look", bg: "linear-gradient(135deg,#cabfb4,#9d8b7b)" },
+          { type: "tall", title: "Texture Study", copy: "Fabric touchpoints: knit, leather, washed cotton, sheer overlay.", tag: "texture", bg: "linear-gradient(160deg,#7d715f,#2d2723)" },
+          { type: "medium", title: "Detail Notes", copy: "Jewelry, shoes, bag shape, glasses, and finish direction.", tag: "details", bg: "linear-gradient(135deg,#d36a78,#6d4f6d)" },
+          { type: "wide", title: "Wardrobe Formula", copy: "Simple repeatable structure for turning the vibe into multiple outfits.", tag: "formula", bg: "linear-gradient(135deg,#f0d6ba,#b99d82)" },
+          { type: "medium", title: "Beauty Pairing", copy: "Hair, lip, and nail choices that tighten the visual language.", tag: "beauty", bg: "linear-gradient(135deg,#e9d7dc,#ad7c87)" },
+          { type: "tall", title: "Accent Piece", copy: "One object that pushes the board from safe to memorable.", tag: "accent", bg: "linear-gradient(135deg,#4f4a52,#161419)" }
+        }
+      },
+      room: {
+        label: "Room",
+        copy: "Interior-focused board with lighting, furniture tone, materials, and object styling.",
+        vibes: {
+          "soft minimal": {
+            palette: ["#f8f3ea", "#d8cdbf", "#a69580", "#706356"],
+            summary: "Low-contrast calm, warm daylight, natural materials, and restrained decor that keeps the space airy."
+          },
+          "retro glow": {
+            palette: ["#efb25d", "#d36a78", "#6d4f6d", "#1d1a2d"],
+            summary: "Lamp-lit corners, curved forms, smoky colors, and a nostalgic late-night warmth."
+          },
+          "chrome future": {
+            palette: ["#eef2f7", "#aeb9c9", "#64748b", "#151821"],
+            summary: "Reflective surfaces, cool shadows, sculptural shapes, and a clean futuristic edge."
+          },
+          "earthy studio": {
+            palette: ["#f1e2c8", "#b48a5b", "#697258", "#39342f"],
+            summary: "Clay tones, plant life, imperfect texture, and furniture that feels collected rather than matched."
+          },
+          "coquette room": {
+            palette: ["#fff0f4", "#f5bfd0", "#d36a78", "#78546c"],
+            summary: "Ribbons, vanity gloss, dreamy light, and sweet feminine decor with layered softness."
+          }
+        },
+        cards: [
+          { type: "large", title: "Main Zone", copy: "The dominant corner or bed area that defines the room identity.", tag: "zone", bg: "linear-gradient(135deg,#f2e6d8,#b8a18f)" },
+          { type: "medium", title: "Lighting Mood", copy: "Lamp color, shadow softness, and time-of-day atmosphere.", tag: "light", bg: "linear-gradient(135deg,#d8a45f,#6d4f6d)" },
+          { type: "tall", title: "Material Story", copy: "Wood, chrome, linen, glass, boucle, tile, or lacquer.", tag: "materials", bg: "linear-gradient(160deg,#697258,#39342f)" },
+          { type: "wide", title: "Object Layer", copy: "Books, frames, candles, trays, flowers, and casual surface styling.", tag: "objects", bg: "linear-gradient(135deg,#f6d3dc,#a56f8b)" },
+          { type: "medium", title: "Color Anchor", copy: "Where the strongest accent tone should live in the room.", tag: "anchor", bg: "linear-gradient(135deg,#97a8c8,#e8ecf2)" },
+          { type: "tall", title: "Texture Contrast", copy: "Smooth versus rough surfaces that keep the space from flattening out.", tag: "contrast", bg: "linear-gradient(135deg,#d1cabd,#8f8578)" }
+        }
+      }
+    };
+
+    const els = {
+      chips: document.getElementById("chips"),
+      palette: document.getElementById("palette"),
+      summary: document.getElementById("summary"),
+      board: document.getElementById("board"),
+      boardTitle: document.getElementById("board-title"),
+      boardNote: document.getElementById("board-note"),
+      footerTags: document.getElementById("footer-tags"),
+      currentDirection: document.getElementById("current-direction"),
+      savedSnapshot: document.getElementById("saved-snapshot"),
+      modeCopy: document.getElementById("mode-copy"),
+      generate: document.getElementById("generate"),
+      shuffle: document.getElementById("shuffle"),
+      save: document.getElementById("save"),
+      clear: document.getElementById("clear"),
+      modeBtns: document.querySelectorAll(".mode-btn")
+    };
+
+    const snapshotKey = "mood-board-snapshot";
+    let state = {
+      mode: "outfit",
+      selected: ["clean girl"],
+      seed: 0
+    };
+
+    function formatDirection() {
+      const modeLabel = DATA[state.mode].label;
+      const vibeLabel = state.selected.length ? state.selected.join(", ") : "no vibe";
+      return `${modeLabel} / ${vibeLabel}`;
+    }
+
+    function renderPalette(colors) {
+      els.palette.innerHTML = colors.map((color) => `<div class="swatch-bar" style="background:${color}"></div>`).join("");
+    }
+
+    function buildSummary() {
+      const vibeMap = DATA[state.mode].vibes;
+      const selectedEntries = state.selected.map((key) => vibeMap[key]);
+      if (!selectedEntries.length) {
+        return "Choose a vibe to turn the board into a specific direction. The generated cards will update automatically.";
+      }
+      return selectedEntries.map((entry) => entry.summary).join(" ");
+    }
+
+    function mixedPalette() {
+      const vibeMap = DATA[state.mode].vibes;
+      if (!state.selected.length) return ["#f6f0e8", "#d9d0c5", "#9f9388", "#554f4b"];
+      const palette = [];
+      state.selected.forEach((key) => palette.push(...vibeMap[key].palette));
+      return palette.slice(0, 4);
+    }
+
+    function renderBoard() {
+      const baseCards = [...DATA[state.mode].cards];
+      if (!state.selected.length) {
+        els.board.innerHTML = `<div class="empty">Pick at least one vibe, then press Generate. This board is designed to feel presentable on first load for Vercel testing.</div>`;
+        return;
+      }
+
+      const vibeLabel = state.selected.join(" · ");
+      const offset = state.seed % baseCards.length;
+      const cards = baseCards.slice(offset).concat(baseCards.slice(0, offset));
+      els.board.innerHTML = cards.map((card, index) => {
+        const tone = mixedPalette()[index % 4];
+        return `
+          <article class="tile ${card.type}" style="background:${card.bg}; box-shadow: 0 18px 40px ${tone}33;">
+            <div class="tile-tag">${card.tag}</div>
+            <div class="tile-meta">
+              <h3>${card.title}</h3>
+              <p>${card.copy}<br>${vibeLabel}</p>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderChips() {
+      const vibes = Object.keys(DATA[state.mode].vibes);
+      els.chips.innerHTML = vibes.map((vibe) => {
+        const active = state.selected.includes(vibe) ? "active" : "";
+        return `<button class="chip ${active}" data-vibe="${vibe}">${vibe}</button>`;
+      }).join("");
+
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => toggleVibe(chip.dataset.vibe));
+      });
+    }
+
+    function updateModeButtons() {
+      els.modeBtns.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.mode === state.mode);
+      });
+    }
+
+    function render() {
+      renderChips();
+      renderPalette(mixedPalette());
+      renderBoard();
+      els.summary.textContent = buildSummary();
+      els.boardTitle.textContent = `${DATA[state.mode].label} Board`;
+      els.boardNote.textContent = DATA[state.mode].copy;
+      els.modeCopy.textContent = DATA[state.mode].copy;
+      els.footerTags.textContent = `Vibes: ${state.selected.length ? state.selected.join(", ") : "none"}`;
+      els.currentDirection.textContent = formatDirection();
+      updateModeButtons();
+    }
+
+    function toggleVibe(vibe) {
+      if (state.selected.includes(vibe)) {
+        state.selected = state.selected.filter((item) => item !== vibe);
+      } else {
+        if (state.selected.length >= 3) state.selected.shift();
+        state.selected.push(vibe);
+      }
+      render();
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      state.selected = [Object.keys(DATA[mode].vibes)[0]];
+      state.seed = 0;
+      render();
+    }
+
+    function saveSnapshot() {
+      const snapshot = {
+        mode: state.mode,
+        selected: state.selected,
+        at: new Date().toLocaleString()
+      };
+      localStorage.setItem(snapshotKey, JSON.stringify(snapshot));
+      els.savedSnapshot.textContent = `${DATA[state.mode].label} / ${state.selected.join(", ")}`;
+    }
+
+    function loadSnapshotLabel() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(snapshotKey) || "null");
+        if (saved && saved.mode && saved.selected) {
+          els.savedSnapshot.textContent = `${DATA[saved.mode].label} / ${saved.selected.join(", ")}`;
+        }
+      } catch (error) {
+        els.savedSnapshot.textContent = "None";
+      }
+    }
+
+    els.modeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => setMode(btn.dataset.mode));
+    });
+
+    els.generate.addEventListener("click", render);
+    els.shuffle.addEventListener("click", () => {
+      state.seed += 1;
+      renderBoard();
+    });
+    els.save.addEventListener("click", saveSnapshot);
+    els.clear.addEventListener("click", () => {
+      state.selected = [];
+      render();
+    });
+
+    loadSnapshotLabel();
+    render();
+  </script>
+</body>
+</html>

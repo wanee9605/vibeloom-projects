@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Boss Fight</title>
+  <style>
+    :root {
+      --bg-1: #120f1d;
+      --bg-2: #25153b;
+      --panel: rgba(8, 8, 14, 0.7);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f5efe6;
+      --muted: #b9adcb;
+      --accent: #ff7a18;
+      --accent-2: #ff3d81;
+      --good: #6cf0c2;
+      --warn: #ffd166;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(255, 122, 24, 0.2), transparent 35%),
+        radial-gradient(circle at 80% 20%, rgba(255, 61, 129, 0.18), transparent 28%),
+        linear-gradient(135deg, var(--bg-1), #05050a 65%);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 46vmax;
+      height: 46vmax;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+    }
+
+    body::before { top: -15vmax; right: -10vmax; background: #ff7a18; }
+    body::after { bottom: -18vmax; left: -10vmax; background: #7c3aed; }
+
+    .app {
+      position: relative;
+      width: min(1100px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-end;
+      padding: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .title {
+      font-size: clamp(2rem, 4vw, 3.8rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 0.9;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      max-width: 36rem;
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+
+    .top-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(90px, 1fr));
+      gap: 10px;
+      min-width: 320px;
+    }
+
+    .stat {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: "Courier New", monospace;
+      font-size: 1.45rem;
+      font-weight: bold;
+    }
+
+    .arena {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 0;
+    }
+
+    .left,
+    .right {
+      padding: 28px;
+    }
+
+    .left {
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.02), transparent),
+        radial-gradient(circle at 50% 0%, rgba(255,122,24,0.13), transparent 34%);
+    }
+
+    .boss-stage {
+      position: relative;
+      min-height: 320px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+        linear-gradient(135deg, #140f22, #2a1838 55%, #190f22);
+    }
+
+    .boss-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 56px,
+          rgba(255,255,255,0.04) 56px,
+          rgba(255,255,255,0.04) 57px
+        );
+      opacity: 0.45;
+    }
+
+    .boss-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .boss {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      border-radius: 30% 40% 35% 45%;
+      background:
+        radial-gradient(circle at 35% 35%, #ffd4a6 0 12%, transparent 13%),
+        radial-gradient(circle at 65% 35%, #ffd4a6 0 12%, transparent 13%),
+        radial-gradient(circle at 50% 58%, #190f22 0 24%, transparent 25%),
+        linear-gradient(145deg, #ff8d32, #ff4f6d 52%, #8a2be2);
+      box-shadow: 0 0 50px rgba(255, 97, 70, 0.35);
+      animation: float 2.8s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    .boss::before,
+    .boss::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      width: 62px;
+      height: 62px;
+      background: linear-gradient(135deg, #ffd166, #ff7a18);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    }
+
+    .boss::before { left: 28px; transform: rotate(-22deg); }
+    .boss::after { right: 28px; transform: rotate(22deg); }
+
+    .boss-face {
+      position: absolute;
+      inset: 0;
+    }
+
+    .eye {
+      position: absolute;
+      top: 84px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #140b1d;
+      box-shadow: 0 0 20px rgba(255,255,255,0.18);
+    }
+
+    .eye.left-eye { left: 66px; }
+    .eye.right-eye { right: 66px; }
+
+    .mouth {
+      position: absolute;
+      bottom: 56px;
+      left: 50%;
+      width: 88px;
+      height: 42px;
+      transform: translateX(-50%);
+      border-bottom: 5px solid #190f22;
+      border-radius: 0 0 60px 60px;
+    }
+
+    .burst {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 61, 129, 0.14);
+      border: 1px solid rgba(255, 61, 129, 0.28);
+      color: #ffd7e7;
+      font-family: "Courier New", monospace;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: 180ms ease;
+    }
+
+    .burst.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .bars {
+      display: grid;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .bar-card {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--panel);
+    }
+
+    .bar-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.82rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .track {
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .fill {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      transition: width 140ms linear;
+    }
+
+    .boss-fill {
+      background: linear-gradient(90deg, #ff7a18, #ff3d81);
+      box-shadow: 0 0 20px rgba(255, 122, 24, 0.4);
+    }
+
+    .player-fill {
+      background: linear-gradient(90deg, #6cf0c2, #5ec7ff);
+      box-shadow: 0 0 18px rgba(108, 240, 194, 0.35);
+    }
+
+    .prompt-card,
+    .input-card,
+    .log-card {
+      padding: 20px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .section-kicker {
+      font-size: 0.76rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .prompt-word {
+      font-size: clamp(1.6rem, 3vw, 2.5rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      color: #fff5ee;
+    }
+
+    .prompt-desc {
+      color: var(--muted);
+      line-height: 1.55;
+      min-height: 3.2em;
+    }
+
+    .input-card {
+      margin-top: 18px;
+    }
+
+    .typing-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(8, 8, 14, 0.82);
+      color: var(--text);
+      padding: 16px 18px;
+      border-radius: 18px;
+      outline: none;
+      font: inherit;
+      font-size: 1.04rem;
+      letter-spacing: 0.04em;
+    }
+
+    input:focus {
+      border-color: rgba(255, 122, 24, 0.6);
+      box-shadow: 0 0 0 4px rgba(255, 122, 24, 0.12);
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 0 22px;
+      color: #140b1d;
+      font-family: "Courier New", monospace;
+      font-weight: bold;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffd166, #ff7a18);
+      transition: transform 150ms ease, box-shadow 150ms ease;
+      box-shadow: 0 12px 30px rgba(255, 122, 24, 0.25);
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .feedback {
+      margin-top: 14px;
+      min-height: 1.4em;
+      color: var(--warn);
+      letter-spacing: 0.03em;
+    }
+
+    .feedback.good { color: var(--good); }
+    .feedback.bad { color: #ff9bab; }
+
+    .log-card {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .log-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #d9cfeb;
+      font-size: 0.94rem;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(5, 5, 10, 0.68);
+      backdrop-filter: blur(10px);
+    }
+
+    .overlay.hidden { display: none; }
+
+    .overlay-card {
+      width: min(500px, 100%);
+      padding: 28px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
+        linear-gradient(135deg, rgba(255,122,24,0.12), rgba(124,58,237,0.12));
+      text-align: center;
+      box-shadow: 0 20px 70px rgba(0,0,0,0.45);
+    }
+
+    .overlay-card h2 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .overlay-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .overlay-card .small {
+      font-size: 0.86rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+      50% { transform: translateY(-8px) rotate(2deg) scale(1.02); }
+    }
+
+    @keyframes hitshake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+    }
+
+    .boss.hit {
+      animation: hitshake 220ms ease;
+    }
+
+    @media (max-width: 920px) {
+      .header,
+      .arena {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .header { align-items: stretch; }
+      .top-stats { min-width: 0; }
+      .left { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 12px; }
+      .header, .left, .right { padding: 20px; }
+      .top-stats { grid-template-columns: repeat(2, 1fr); }
+      .typing-row { flex-direction: column; }
+      button { min-height: 56px; }
+      .boss-stage { min-height: 270px; }
+      .boss { width: 180px; height: 180px; }
+      .eye { top: 68px; }
+      .eye.left-eye { left: 50px; }
+      .eye.right-eye { right: 50px; }
+      .mouth { bottom: 44px; width: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="header">
+      <div>
+        <h1 class="title">Typing Boss Fight</h1>
+        <p class="subtitle">You have 60 seconds. Type the attack words exactly, keep the combo alive, and break the boss before your focus bar gets erased.</p>
+      </div>
+      <div class="top-stats">
+        <div class="stat"><div class="stat-label">Time</div><div class="stat-value" id="time">60</div></div>
+        <div class="stat"><div class="stat-label">Combo</div><div class="stat-value" id="combo">0</div></div>
+        <div class="stat"><div class="stat-label">Score</div><div class="stat-value" id="score">0</div></div>
+        <div class="stat"><div class="stat-label">Best</div><div class="stat-value" id="best">0</div></div>
+      </div>
+    </section>
+
+    <section class="arena">
+      <div class="left">
+        <div class="boss-stage">
+          <div class="burst" id="burst">Critical Hit</div>
+          <div class="boss-wrap">
+            <div class="boss" id="boss">
+              <div class="boss-face">
+                <div class="eye left-eye"></div>
+                <div class="eye right-eye"></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bars">
+          <div class="bar-card">
+            <div class="bar-head"><span>Boss HP</span><span id="boss-hp-label">100 / 100</span></div>
+            <div class="track"><div class="fill boss-fill" id="boss-bar"></div></div>
+          </div>
+          <div class="bar-card">
+            <div class="bar-head"><span>Focus Shield</span><span id="player-hp-label">100 / 100</span></div>
+            <div class="track"><div class="fill player-fill" id="player-bar"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="prompt-card">
+          <div class="section-kicker">Current Spell</div>
+          <div class="prompt-word" id="word">Press start</div>
+          <div class="prompt-desc" id="hint">Each correct word deals damage. Fast chains raise combo and add bonus damage.</div>
+        </div>
+
+        <div class="input-card">
+          <div class="section-kicker">Type Here</div>
+          <div class="typing-row">
+            <input id="input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the spell exactly" />
+            <button id="submit">Hit</button>
+          </div>
+          <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div class="log-card">
+          <div class="section-kicker">Battle Feed</div>
+          <div class="log-item"><span>Boss pattern</span><strong id="pattern">Waiting...</strong></div>
+          <div class="log-item"><span>Last hit</span><strong id="last-hit">0 dmg</strong></div>
+          <div class="log-item"><span>Accuracy</span><strong id="accuracy">0%</strong></div>
+          <div class="log-item"><span>Misses</span><strong id="misses">0</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="overlay" id="overlay">
+      <div class="overlay-card">
+        <h2 id="overlay-title">Ready</h2>
+        <p id="overlay-copy">Type the glowing words, keep the rhythm, and survive the boss pressure. One round lasts exactly 60 seconds.</p>
+        <p class="small" id="overlay-stats">Enter or Hit button to attack</p>
+        <button id="start">Start Round</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SPELLS = [
+      { word: "ember", hint: "Short burst. Safe starter word.", pattern: "single blast" },
+      { word: "overdrive", hint: "Longer spell. Good combo builder.", pattern: "heat surge" },
+      { word: "static bloom", hint: "Two words. Keep the spacing exact.", pattern: "split pulse" },
+      { word: "night shift", hint: "Boss slows, then strikes harder.", pattern: "delayed swing" },
+      { word: "sundown", hint: "Quick damage with clean rhythm.", pattern: "snap strike" },
+      { word: "vector heart", hint: "A designer-core finisher spell.", pattern: "angled arc" },
+      { word: "afterimage", hint: "Medium spell. Great for score pushes.", pattern: "ghost trail" },
+      { word: "signal fire", hint: "Two-word attack. Stay precise.", pattern: "flare wave" },
+      { word: "velvet glitch", hint: "Rare spell. Strong critical odds.", pattern: "glitch break" },
+      { word: "glass tiger", hint: "Rare spell. High reward if typed cleanly.", pattern: "shatter rush" }
+    ];
+
+    const MAX_TIME = 60;
+    const MAX_HP = 100;
+    const ATTACK_INTERVAL = 2400;
+
+    const els = {
+      time: document.getElementById("time"),
+      combo: document.getElementById("combo"),
+      score: document.getElementById("score"),
+      best: document.getElementById("best"),
+      bossBar: document.getElementById("boss-bar"),
+      bossHp: document.getElementById("boss-hp-label"),
+      playerBar: document.getElementById("player-bar"),
+      playerHp: document.getElementById("player-hp-label"),
+      word: document.getElementById("word"),
+      hint: document.getElementById("hint"),
+      input: document.getElementById("input"),
+      feedback: document.getElementById("feedback"),
+      pattern: document.getElementById("pattern"),
+      lastHit: document.getElementById("last-hit"),
+      accuracy: document.getElementById("accuracy"),
+      misses: document.getElementById("misses"),
+      overlay: document.getElementById("overlay"),
+      overlayTitle: document.getElementById("overlay-title"),
+      overlayCopy: document.getElementById("overlay-copy"),
+      overlayStats: document.getElementById("overlay-stats"),
+      start: document.getElementById("start"),
+      submit: document.getElementById("submit"),
+      boss: document.getElementById("boss"),
+      burst: document.getElementById("burst")
+    };
+
+    const bestKey = "typing-boss-best";
+    let best = parseInt(localStorage.getItem(bestKey) || "0", 10);
+    els.best.textContent = best;
+
+    let state = {};
+    let timerId = null;
+    let attackId = null;
+
+    function pickSpell() {
+      return SPELLS[Math.floor(Math.random() * SPELLS.length)];
+    }
+
+    function resetState() {
+      state = {
+        running: false,
+        time: MAX_TIME,
+        combo: 0,
+        score: 0,
+        bossHp: MAX_HP,
+        playerHp: MAX_HP,
+        totalHits: 0,
+        misses: 0,
+        spell: pickSpell()
+      };
+    }
+
+    function updateBars() {
+      els.bossBar.style.width = `${Math.max(0, state.bossHp)}%`;
+      els.playerBar.style.width = `${Math.max(0, state.playerHp)}%`;
+      els.bossHp.textContent = `${Math.max(0, Math.ceil(state.bossHp))} / ${MAX_HP}`;
+      els.playerHp.textContent = `${Math.max(0, Math.ceil(state.playerHp))} / ${MAX_HP}`;
+    }
+
+    function updateStats() {
+      els.time.textContent = state.time;
+      els.combo.textContent = state.combo;
+      els.score.textContent = state.score;
+      els.accuracy.textContent = `${getAccuracy()}%`;
+      els.misses.textContent = state.misses;
+      updateBars();
+    }
+
+    function getAccuracy() {
+      const attempts = state.totalHits + state.misses;
+      if (!attempts) return 0;
+      return Math.round((state.totalHits / attempts) * 100);
+    }
+
+    function setSpell(nextSpell) {
+      state.spell = nextSpell;
+      els.word.textContent = nextSpell.word;
+      els.hint.textContent = nextSpell.hint;
+      els.pattern.textContent = nextSpell.pattern;
+    }
+
+    function showFeedback(message, type) {
+      els.feedback.textContent = message;
+      els.feedback.className = `feedback ${type || ""}`.trim();
+    }
+
+    function flashBurst(text) {
+      els.burst.textContent = text;
+      els.burst.classList.add("show");
+      setTimeout(() => els.burst.classList.remove("show"), 320);
+    }
+
+    function hitBoss(damage, critical) {
+      state.bossHp = Math.max(0, state.bossHp - damage);
+      state.score += damage * 10 + state.combo * 3;
+      state.totalHits += 1;
+      els.lastHit.textContent = `${damage} dmg`;
+      updateStats();
+
+      els.boss.classList.remove("hit");
+      void els.boss.offsetWidth;
+      els.boss.classList.add("hit");
+      flashBurst(critical ? "Critical Hit" : `+${damage} dmg`);
+
+      if (state.score > best) {
+        best = state.score;
+        localStorage.setItem(bestKey, String(best));
+        els.best.textContent = best;
+      }
+
+      if (state.bossHp <= 0) {
+        state.bossHp = MAX_HP;
+        state.time = Math.min(MAX_TIME, state.time + 6);
+        state.score += 500;
+        showFeedback("Boss broken. New form spawned and +6 seconds awarded.", "good");
+        flashBurst("Boss Break");
+        updateStats();
+      }
+    }
+
+    function bossAttack() {
+      if (!state.running) return;
+      const damage = Math.min(18, 7 + Math.floor(state.time / 10) + Math.floor(Math.random() * 4));
+      state.playerHp = Math.max(0, state.playerHp - damage);
+      state.combo = Math.max(0, state.combo - 1);
+      showFeedback(`Boss hit your focus for ${damage}.`, "bad");
+      updateStats();
+      if (state.playerHp <= 0) endGame("Focus Lost", "The boss broke your shield before time ran out.");
+    }
+
+    function handleSubmit() {
+      if (!state.running) return;
+      const typed = els.input.value.trim().toLowerCase();
+      if (!typed) return;
+
+      if (typed === state.spell.word) {
+        state.combo += 1;
+        const critical = Math.random() < Math.min(0.35, 0.1 + state.combo * 0.02);
+        const damage = 8 + Math.min(14, state.combo) + (critical ? 8 : 0);
+        hitBoss(damage, critical);
+        showFeedback(critical ? "Perfect rhythm. Critical strike." : "Clean hit landed.", "good");
+        setSpell(pickSpell());
+      } else {
+        state.misses += 1;
+        state.combo = 0;
+        state.playerHp = Math.max(0, state.playerHp - 5);
+        els.lastHit.textContent = "miss";
+        showFeedback("Miss. Exact spacing and spelling matter.", "bad");
+        updateStats();
+        if (state.playerHp <= 0) {
+          endGame("Focus Lost", "Too many mistakes collapsed your shield.");
+          els.input.value = "";
+          return;
+        }
+      }
+
+      els.input.value = "";
+    }
+
+    function tick() {
+      if (!state.running) return;
+      state.time -= 1;
+      updateStats();
+      if (state.time <= 0) endGame("Time Up", "The round ended. Your final score is locked.");
+    }
+
+    function clearTimers() {
+      clearInterval(timerId);
+      clearInterval(attackId);
+      timerId = null;
+      attackId = null;
+    }
+
+    function endGame(title, copy) {
+      state.running = false;
+      clearTimers();
+      els.overlayTitle.textContent = title;
+      els.overlayCopy.textContent = copy;
+      els.overlayStats.textContent = `Score ${state.score} · Accuracy ${getAccuracy()}% · Best ${best}`;
+      els.start.textContent = "Play Again";
+      els.overlay.classList.remove("hidden");
+    }
+
+    function startGame() {
+      clearTimers();
+      resetState();
+      state.running = true;
+      els.start.textContent = "Start Round";
+      els.overlay.classList.add("hidden");
+      setSpell(state.spell);
+      showFeedback("Type fast. The boss attacks every few seconds.");
+      els.lastHit.textContent = "0 dmg";
+      updateStats();
+      els.input.value = "";
+      els.input.focus();
+      timerId = setInterval(tick, 1000);
+      attackId = setInterval(bossAttack, ATTACK_INTERVAL);
+    }
+
+    els.submit.addEventListener("click", handleSubmit);
+    els.start.addEventListener("click", startGame);
+    els.input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleSubmit();
+      }
+    });
+
+    resetState();
+    setSpell(state.spell);
+    updateStats();
+  </script>
+</body>
+</html>
